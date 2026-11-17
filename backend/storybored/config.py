@@ -39,11 +39,23 @@ class Settings(BaseSettings):
         default="127.0.0.1",
         description=(
             "Network interface to bind. Defaults to 127.0.0.1 (this machine "
-            "only). Set to 0.0.0.0 to expose on your LAN — the app has NO "
-            "authentication, so only do that on a network you trust."
+            "only). Set to 0.0.0.0 to expose on your LAN. There is no login "
+            "system; set STORYBORED_TOKEN whenever the app is reachable by "
+            "other machines (LAN or tunnel) — it gates /api/* with a shared "
+            "secret."
         ),
     )
     storybored_port: int = 8600
+    storybored_token: str = Field(
+        default="",
+        description=(
+            "Optional shared-access token. When set, /api/* requests must "
+            "pass it as 'Authorization: Bearer <token>' or '?token=<token>' "
+            "(the query form is what <img>/EventSource need). Empty = open, "
+            "exactly as before. Intended for tunnel/cloud exposure (Colab, "
+            "Kaggle, ngrok) — always set it there."
+        ),
+    )
     data_dir: str = Field(
         default="./data",
         description=(

@@ -294,10 +294,11 @@ Ollama とレンダリングエンジンで 1 枚の GPU を共用?Ollama はす
 ベース URL、モデル名、API キーを入力してください。
 
 > **ネットワーク上で実行する場合。** StoryBored は既定で `127.0.0.1`(localhost)
-> のみをリッスンし、実行しているマシンからだけ到達できます。**ログインも認証も
-> ありません** — サーバーに到達できる人は誰でも、あなたの GPU を操作し、メディアを
-> 読み、設定を変更できます。`STORYBORED_HOST=0.0.0.0` を設定して他のデバイスに開くのは
-> 信頼できるネットワークでのみにし、公衆インターネットに直接露出させることはしないでください。
+> のみをリッスンし、実行しているマシンからだけ到達できます。ログイン画面はありません。
+> トンネルや `STORYBORED_HOST=0.0.0.0` で他のマシンから届くようにするときは、必ず
+> `STORYBORED_TOKEN` を設定してください。未設定のまま公開すると、到達した誰でも
+> GPU を操作し、メディアを読み、設定を変更できます。トークンは
+> `Authorization: Bearer` か `?token=`(画像と SSE 用)で渡します。
 
 ## ハードウェアの目安
 
@@ -325,6 +326,18 @@ StoryBored が同梱するのはエンジンの*定義*であり、ロードさ�
 ComfyUI は StoryBored とは別のマシンで動かせます — `COMFYUI_URL` を適宜設定してください。
 全ジョブは 1 本の GPU レーンを共有するため、長い学習実行は単純に生成の後ろに
 キューイングされます(UI にキューが表示されます)。
+
+## Colab / Kaggle で動かす(実験的)
+
+GPU のないマシンから、ノートブック 1 つで ComfyUI と StoryBored をクラウド GPU 上に立ち上げてブラウザから使えます。手順は [notebooks/storybored-cloud.ipynb](notebooks/storybored-cloud.ipynb) です。プラットフォーム側の仕様が変わると急に止まることがあります。
+
+- **Colab** — [このボタンで開く](https://colab.research.google.com/github/ma-team333/storybored/blob/ja/notebooks/storybored-cloud.ipynb)。無料枠の T4(16 GB)で足ります。
+- **Kaggle** — File → Import Notebook。Settings で Internet を ON、Accelerator を GPU T4 x2 にします。セッションは最長 12 時間、GPU は週 30 時間の割り当てです。ノートブックは 1 枚だけ使います。
+- **公開** — ngrok(pyngrok)で 8600 番を出します。cloudflared のクイックトンネル(trycloudflare.com)は SSE(`/api/events`)に対応しないので使えません。
+- **トークン** — ノートブックが `STORYBORED_TOKEN` を生成し、トークン付き URL を表示します。トンネルを開いたままトークンなしにしないでください。
+- **データ** — セッションのディスクは切れます。閉じる前にノートブックの退避セル(Colab は Google Drive、Kaggle は zip のダウンロード)か、UI の書き出し(`.storybored`)を使ってください。
+
+16 GB の T4 は、上の表の **16–23 GB(stills-hd)** の下限です。最初は Z-Image Turbo の int8 ビルド(拡散モデル 6.2 GB + テキストエンコーダ 5.6 GB + VAE 335 MB)から始めてください。同じ帯の Krea 2 は拡散モデル 13.1 GB + テキストエンコーダ 5.2 GB で、16 GB では込まりきらないことがあります。Qwen-Image 2512 は 24 GB カードの約 86% を使うと [docs/MODELS.md](docs/MODELS.md) にあり、16 GB には入りません。Wan 2.2 14B は拡散モデル 14.3 GB が 2 本です。MiniMax H3 の同梱ファイルは NVFP4 で、同じ形式の Z-Image NVFP4 は Blackwell(RTX 50 シリーズ)専用とカタログに書いてあります。T4 では使えません。速度の新しい実測はここには書きません。
 
 ## データの移動・バックアップ
 

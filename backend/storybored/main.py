@@ -3,11 +3,13 @@
 import asyncio
 import importlib
 import logging
+import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 from storybored.api import (
     breakdown,
@@ -48,6 +50,41 @@ HANDLER_MODULES = [
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
+class TokenGate:
+    """Pure-ASGI gate for /api/* when STORYBORED_TOKEN is set.
+
+    Accepts the token as 'Authorization: Bearer <token>' (fetch) or
+    '?token=<token>' (EventSource and <img>/<video> tags can't set headers).
+    Constant-time compare; a wrong or missing token gets the same 401 shape
+    as every other API error. Non-http scopes (lifespan, websockets) and
+    non-/api paths pass through untouched."""
+
+    def __init__(self, app, token: str):
+        self.app = app
+        self.token = token.encode("utf-8")
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope.get("path", "").startswith("/api"):
+            provided = b""
+            headers = {k.lower(): v for k, v in scope.get("headers") or []}
+            auth = headers.get(b"authorization", b"")
+            if auth[:7].lower() == b"bearer ":
+                provided = auth[7:].strip()
+            if not provided:
+                provided = headers.get(b"x-storybored-token", b"")
+            if not provided:
+                query = parse_qs(scope.get("query_string", b"").decode("latin-1"))
+                provided = (query.get("token") or [""])[0].encode("utf-8")
+            if not secrets.compare_digest(provided, self.token):
+                response = JSONResponse(
+                    {"detail": "アクセストークンが必要です(STORYBORED_TOKEN)"},
+                    status_code=401,
+                )
+                await response(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
     engine = create_db_engine(settings)
@@ -77,6 +114,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = engine
     app.state.bus = bus
     app.state.runner = runner
+
+    if settings.storybored_token:
+        # Cloud/tunnel exposure (Colab, Kaggle, ngrok). Static assets stay
+        # open — the SPA needs them to show the token prompt — everything
+        # under /api (media included) is gated.
+        app.add_middleware(TokenGate, token=settings.storybored_token)
 
     for module in (
         health,

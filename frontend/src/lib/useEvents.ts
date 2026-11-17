@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { getToken } from "./api";
 import type { Character, Job, Shot, Take } from "./types";
 
 // One EventSource for the whole app. Job events patch the query cache
@@ -49,7 +50,8 @@ export function useEvents(): boolean {
 
     const connect = () => {
       if (closed) return;
-      es = new EventSource("/api/events");
+      const token = getToken();
+      es = new EventSource(`/api/events${token ? `?token=${encodeURIComponent(token)}` : ""}`);
       es.onopen = () => setConnected(true);
       es.onerror = () => {
         setConnected(false);

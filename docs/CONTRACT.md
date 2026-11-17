@@ -61,6 +61,10 @@ storybored/
 ```
 STORYBORED_PORT=8600
 DATA_DIR=./data                      # sqlite db + media + exports live here
+STORYBORED_TOKEN=                    # optional: when set, /api/* requires it via
+                                     # 'Authorization: Bearer <t>' or '?token=<t>'
+                                     # (query form for EventSource/<img>). Static
+                                     # assets stay open. Empty = no auth.
 COMFYUI_URL=http://127.0.0.1:8188
 COMFY_LORAS_DIR=                     # optional: where to copy imported character LoRAs
 COMFY_MODELS_DIR=                    # optional: ComfyUI's models/ dir (shared filesystem

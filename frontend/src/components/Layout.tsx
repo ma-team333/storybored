@@ -5,6 +5,7 @@ import { Clapperboard, Settings, Users } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { JobTray } from "./JobTray";
+import { TokenGate } from "./TokenGate";
 import { useHealth } from "./HealthBanner";
 import { apiGet } from "../lib/api";
 import { useEvents } from "../lib/useEvents";
@@ -74,6 +75,7 @@ export function Layout() {
       <ErrorBoundary compact>
         <JobTray />
       </ErrorBoundary>
+      <TokenGate />
     </div>
   );
 }
