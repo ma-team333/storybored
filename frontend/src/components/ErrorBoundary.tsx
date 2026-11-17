@@ -26,12 +26,12 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.props.compact) {
       return (
         <div className="flex items-center gap-2 rounded-md border border-line p-3 text-sm text-fog">
-          Something went wrong here.
+          ここで問題が発生しました。
           <button
             className="inline-flex items-center gap-1 text-amber-450 hover:text-amber-350"
             onClick={() => this.setState({ error: null })}
           >
-            <RotateCcw size={13} /> Retry
+            <RotateCcw size={13} /> 再試行
           </button>
         </div>
       );
@@ -42,17 +42,16 @@ export class ErrorBoundary extends Component<Props, State> {
           <Clapperboard size={32} className="text-amber-450" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold">Well, that take didn't work.</h2>
+          <h2 className="text-lg font-semibold">予期しないエラーが発生しました</h2>
           <p className="mt-1 max-w-sm text-sm text-fog">
-            Something unexpected happened in this part of the app. Your work is
-            saved on the server.
+            アプリのこの部分で予期しない事象が発生しました。作業内容はサーバーに保存されています。
           </p>
         </div>
         <button
           className="inline-flex h-9 items-center gap-2 rounded-md bg-amber-450 px-4 text-sm font-semibold text-ink-950 hover:bg-amber-350"
           onClick={() => this.setState({ error: null })}
         >
-          <RotateCcw size={14} /> Try again
+          <RotateCcw size={14} /> 再試行
         </button>
       </div>
     );

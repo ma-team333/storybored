@@ -1,21 +1,21 @@
 {
   "id": "krea2-basic",
-  "name": "Krea 2 — Basic",
+  "name": "Krea 2 — ベーシック",
   "kind": "image",
   "lora_family": "krea2",
-  "description": "Lean 8-step turbo-distilled Krea 2: base model plus the turbo distill LoRA only. Fast, style-neutral stills — a good default when character LoRAs should dominate the look.",
+  "description": "8 ステップのターボ蒸留に絞り込んだ Krea 2:ベースモデルにターボ蒸留 LoRA だけを足した構成。高速でスタイル中立なスチル生成に向き、キャラクター LoRA を見た目の主役にしたいときの良いデフォルト。",
   "license_note": "Krea 2 Community License: commercial use only below $1M trailing-12-month revenue, and the license is revocable on 30 days notice. Fully open alternatives: the Z-Image and Qwen-Image engines (Apache 2.0).",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "seed", "label": "Seed", "type": "seed", "node": "3", "input": "seed"},
-    {"key": "width", "label": "Width", "type": "int", "node": "5", "input": "width", "default": 1728},
-    {"key": "height", "label": "Height", "type": "int", "node": "5", "input": "height", "default": 1152},
-    {"key": "steps", "label": "Steps", "type": "int", "node": "3", "input": "steps", "default": 8}
+    {"key": "prompt", "label": "プロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "seed", "label": "シード", "type": "seed", "node": "3", "input": "seed"},
+    {"key": "width", "label": "幅", "type": "int", "node": "5", "input": "width", "default": 1728},
+    {"key": "height", "label": "高さ", "type": "int", "node": "5", "input": "height", "default": 1152},
+    {"key": "steps", "label": "ステップ数", "type": "int", "node": "3", "input": "steps", "default": 8}
   ],
   "output_node": "9",
   "model_slots": [
-    {"key": "unet", "label": "Base model", "node": "4", "input": "unet_name"}
+    {"key": "unet", "label": "ベースモデル", "node": "4", "input": "unet_name"}
   ],
   "character_injection": {
     "after_node": "lora_distill",

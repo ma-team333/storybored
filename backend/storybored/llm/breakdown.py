@@ -78,8 +78,15 @@ each shot (typically 2-8). Give every scene a "look": one sentence of concrete
 photographic language pinning its visual environment — place, light source and
 quality, weather/atmosphere, palette — inferred from the script.
 
+Write ALL of your output text in Japanese. Scene titles, scene "look" lines,
+shot descriptions, camera notes, and dialogue are Japanese prose; sluglines
+keep the INT./EXT. format but name the location and time of day in Japanese.
+
 Return ONLY a single JSON object exactly matching this schema (no code fences,
-no commentary, no trailing text):
+no commentary, no trailing text). Every JSON key stays in English exactly as
+shown, and every string value is written in Japanese — except "shot_type"
+(keep the English tokens like WIDE or CU shown in the schema) and the
+"characters" entries (bare English handles, never translated):
 
 {schema}
 
@@ -133,8 +140,16 @@ photorealistic still — not a note. In each description:
   wardrobe if the story doesn't say, and keep it consistent across the scene.
 - Put camera movement in the "camera" field, not the description.
 
+Write ALL of your output text in Japanese: scene titles, "look" lines, shot
+descriptions, camera notes, and dialogue are Japanese prose. Sluglines keep
+the INT./EXT. format but name the location and time of day in Japanese.
+Only @handle tokens stay in their original form.
+
 Return ONLY a single JSON object exactly matching this schema (no code fences,
-no commentary, no trailing text):
+no commentary, no trailing text). Every JSON key stays in English exactly as
+shown, and every string value is written in Japanese — except "shot_type"
+(keep the English tokens like WIDE or CU shown in the schema) and the
+"characters" entries (bare English handles, never translated):
 
 {schema}
 
@@ -148,7 +163,8 @@ shot. Story characters not in the known list: describe them in the description
 
 RETRY_NUDGE = (
     "That was not valid JSON. Return only valid JSON matching the schema — "
-    "no code fences, no commentary, nothing before or after the JSON object."
+    "no code fences, no commentary, nothing before or after the JSON object. "
+    "Keep every JSON key in English and write all string values in Japanese."
 )
 
 _FENCE_RE = re.compile(r"^```[a-zA-Z0-9_-]*\s*\n(.*?)\n?```\s*$", re.DOTALL)
@@ -158,7 +174,8 @@ _FENCE_RE = re.compile(r"^```[a-zA-Z0-9_-]*\s*\n(.*?)\n?```\s*$", re.DOTALL)
 #: vibes descriptions ARE render prompts; script descriptions still seed them)
 GUIDE_LEAD_IN = (
     "The shot descriptions you write will be rendered as stills by the image "
-    "engine below — lean toward its preferred prompt style when describing shots:"
+    "engine below — lean toward its preferred prompt style when describing "
+    "shots, and write them in Japanese:"
 )
 
 

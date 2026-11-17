@@ -462,25 +462,25 @@ export function healthOk(part: HealthPart | undefined): boolean {
 /** Friendly copy for the backend's health-status vocabulary (see the
  *  /api/health contract). Unknown strings pass through untouched. */
 const STATUS_LABELS: Record<string, string> = {
-  ok: "ok",
-  not_configured: "not set up",
-  unreachable: "can't be reached",
-  unrecognized: "something answered, but it doesn't look like the right service",
-  unauthorized: "it wants an API key — check the key in Settings",
-  error: "reachable, but reporting a server error",
-  missing: "folder not found",
+  ok: "正常",
+  not_configured: "未設定",
+  unreachable: "接続できません",
+  unrecognized: "応答はあるが、正しいサービスではないようです",
+  unauthorized: "API キーが必要です — 設定でキーを確認してください",
+  error: "接続できるがサーバーエラーを報告しています",
+  missing: "フォルダが見つかりません",
 };
 
 /** Human string for a health part. */
 export function healthDetail(part: HealthPart | undefined): string {
-  if (part == null) return "not set up";
+  if (part == null) return "未設定";
   if (typeof part === "string") return STATUS_LABELS[part] ?? part;
-  if (typeof part === "boolean") return part ? "ok" : "unavailable";
+  if (typeof part === "boolean") return part ? "正常" : "利用不可";
   if (typeof part === "object") {
     if (typeof part.detail === "string" && part.detail) return part.detail;
     if (typeof part.status === "string" && part.status)
       return STATUS_LABELS[part.status] ?? part.status;
-    return part.ok ? "ok" : "unavailable";
+    return part.ok ? "正常" : "利用不可";
   }
-  return "unknown";
+  return "不明";
 }

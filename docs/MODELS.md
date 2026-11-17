@@ -1,270 +1,263 @@
-# Getting the model files
+# モデルファイルの入手
 
-StoryBored ships engine **definitions**, not model weights. An engine pack is a
-small ComfyUI graph plus a manifest (see [WORKFLOWS.md](WORKFLOWS.md)) — a few
-kilobytes. The actual generation is done by multi-gigabyte model files that live
-in **your ComfyUI**, and those are what you download separately.
+StoryBored が同梱するのはエンジンの**定義**であり、モデルの重みではありません。
+エンジンパックは小さな ComfyUI グラフ + マニフェスト([WORKFLOWS.md](WORKFLOWS.md) 参照)
+— 数 KB です。実際の生成は**あなたの ComfyUI** にある数 GB のモデルファイルが行い、
+それを別途ダウンロードします。
 
-## What can my GPU do?
+## 自分の GPU は何ができる?
 
-The setup wizard reads your GPU's VRAM from the engine, sorts you into a
-**tier**, and recommends the verified engine for it — this table is that
-logic on paper. Every recommendation is a preselection, never a lock: any
-pack your ComfyUI can run stays selectable. Speed numbers are sourced
-community/vendor measurements on the named card, not promises.
+<a id="what-can-my-gpu-do"></a>
 
-| VRAM | Tier | Recommended stills engine | Recommended video engine | Downloads | License | Measured speed | Character training |
+セットアップウィザードはエンジンから GPU の VRAM を読み取り、**ティア**に分類して、
+そのティアの検証済みエンジンを推奨します — この表はそのロジックを紙に起こしたものです。
+すべての推奨は事前選択であり、決してロックではありません:ComfyUI が実行できるパックは
+すべて選択可能なままです。速度数値は記載カードでのコミュニティ/ベンダーの実測値に基づく
+ものであり、約束ではありません。
+
+| VRAM | ティア | 推奨スチルエンジン | 推奨動画エンジン | ダウンロード | ライセンス | 実測速度 | キャラクター学習 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| under 6 GB | `board` | — | — | — | — | boards, script AI and animatic export work without a GPU | — |
-| 6–11 GB | `stills-lite` | **Z-Image Turbo** (`z-image-turbo`) | — | ~12.2 GB | Apache 2.0 | ~15–20 s per 1024² still (RTX 4060, with offloading at 6–8 GB) | not established — import ready-made LoRAs (Civitai carries 5k+ Z-Image character LoRAs) |
-| 12–15 GB | `stills` | **Z-Image Turbo** (`z-image-turbo`) | **Wan 2.2 5B** (`wan22-ti2v-5b`) | ~12.2 GB + ~18.1 GB | Apache 2.0 | stills under 10 s (RTX 3060 12 GB) | **Z-Image** ~1–2 h (2000 steps, 512/768 buckets — community-proven on RTX 3060-class) |
-| 16–23 GB | `stills-hd` | **Krea 2** (`krea2-basic`) | **Wan 2.2 5B** (`wan22-ti2v-5b`) | ~19.1 GB + ~18.1 GB | Krea 2 Community (see notice) | ~13 s per 1024² still at 8 steps (RTX 3090) | **Z-Image** ~1–2 h (2000 steps); Krea 2 training wants 24 GB |
-| 24 GB+ | `studio` | **Qwen-Image 2512** (`qwen-image-2512`) | **Wan 2.2 14B** (`wan22-i2v-14b`) | ~30.9 GB + ~38.0 GB | Apache 2.0 | stills ~34–55 s with the Lightning LoRA (RTX 4090D, official Comfy numbers) | any family — **Krea 2** ~2.5–4 h (3000 steps) or **Z-Image** ~1–2 h; Qwen-Image experimental |
+| 6 GB 未満 | `board` | — | — | — | — | GPU なしでボード、脚本 AI、アニマティック書き出しが動作 | — |
+| 6–11 GB | `stills-lite` | **Z-Image Turbo** (`z-image-turbo`) | — | ~12.2 GB | Apache 2.0 | 1024² スチル 1 枚約 15–20 秒(RTX 4060、6–8 GB ではオフロード付き) | 未確立 — 既製 LoRA を読み込み(Civitai に 5k+ の Z-Image キャラクター LoRA) |
+| 12–15 GB | `stills` | **Z-Image Turbo** (`z-image-turbo`) | **Wan 2.2 5B** (`wan22-ti2v-5b`) | ~12.2 GB + ~18.1 GB | Apache 2.0 | スチル 10 秒未満(RTX 3060 12 GB) | **Z-Image** ~1–2 時間(2000 ステップ数、512/768 バケット — RTX 3060 クラスでコミュニティ実証済み) |
+| 16–23 GB | `stills-hd` | **Krea 2** (`krea2-basic`) | **Wan 2.2 5B** (`wan22-ti2v-5b`) | ~19.1 GB + ~18.1 GB | Krea 2 Community(注意書き参照) | 1024² スチル 8 ステップで約 13 秒(RTX 3090) | **Z-Image** ~1–2 時間(2000 ステップ数);Krea 2 学習は 24 GB を望む |
+| 24 GB+ | `studio` | **Qwen-Image 2512** (`qwen-image-2512`) | **Wan 2.2 14B** (`wan22-i2v-14b`) | ~30.9 GB + ~38.0 GB | Apache 2.0 | Lightning LoRA 使用でスチル約 34–55 秒(RTX 4090D、公式 Comfy 数値) | 全ファミリー — **Krea 2** ~2.5–4 時間(3000 ステップ数)または **Z-Image** ~1–2 時間;Qwen-Image は実験的 |
 
-Notes the table can't hold:
+表に収まらない注意点:
 
-- **Z-Image Turbo** is also the *fast, license-clean* alternative at 16 GB+ —
-  roughly twice the speed of Krea 2 per still (~2.3 s on an RTX 4090), Apache
-  licensed, with the largest post-2025 LoRA training ecosystem. Its bf16
-  build (12.3 GB) is a catalog alternate for 16 GB cards.
-- **Wan 2.2 video is silent** — no audio track. The MiniMax H3 pack generates
-  synchronized audio but carries a serious license notice (US/EU/UK/South
-  Korea territory exclusion) and its default file runs only on RTX 50-series
-  cards; it remains available as a clearly labeled power option.
-- **Wan 2.2 5B on 8–11 GB cards**: its official floor is "fits on 8 GB with
-  native offloading". The wizard only *recommends* it from 12 GB up to avoid
-  over-promising — on an 8 GB card, try it manually.
-- **Wan 2.2 14B at ~20 steps** takes ~4 m 20 s per 5 s clip on an RTX 4090;
-  the shipped pack bakes the official lightx2v 4-step LoRAs, which cut the
-  step count 20 → 4 (toggle them off in Settings to run the slow path — then
-  raise steps to 20 and cfg to 3.5).
-- **Character training is family-bound and tiered** (see the Training column
-  and [TRAINING.md](TRAINING.md#model-families)): a trained LoRA only works on
-  the model family it was trained for, training targets your default image
-  engine's family, and the proven recipes are Z-Image from 12 GB-class cards
-  (~1–2 h) and Krea 2 from 24 GB-class (~2.5–4 h). Below 12 GB, import
-  ready-made LoRAs instead of training.
-- Licensing philosophy: recommendations are **safe-by-default** — Apache 2.0
-  wherever a tier has an Apache winner. Engines with license caveats stay
-  available but wear a visible notice (`license_note`) in Settings and the
-  wizard.
+- **Z-Image Turbo** は 16 GB+ での*高速でライセンスクリーンな*代替でもあります —
+  Krea 2 の約 2 倍の速度でスチル 1 枚(RTX 4090 で約 2.3 秒)、Apache ライセンス、
+  2025 年以降最大の LoRA 学習エコシステム。bf16 ビルド(12.3 GB)は 16 GB カード向けの
+  カタログ代替です。
+- **Wan 2.2 動画は無音** — 音声トラックなし。MiniMax H3 パックは同期音声を生成しますが、
+  重大なライセンス注意(US/EU/UK/韓国領域除外)を持ち、既定ファイルは RTX 50 シリーズ
+  のみで動きます。明確にラベル付けされた上級オプションとして利用可能なままです。
+- **8–11 GB カードでの Wan 2.2 5B**:公式の下限は「ネイティブオフロードで 8 GB に
+  収まる」。大げさな約束を避けるため、ウィザードは 12 GB から*推奨*するだけ —
+  8 GB カードでも手動で試せます。
+- **約 20 ステップ数の Wan 2.2 14B** は RTX 4090 で 5 秒クリップ 1 本あたり約 4 分 20 秒;
+  同梱パックは公式 lightx2v 4 ステップ LoRA を焼き込んでおり、ステップ数を 20 → 4 に
+  減らします(設定で OFF にすれば低速パスで実行 — その場合ステップ数を 20、cfg を
+  3.5 に上げてください)。
+- **キャラクター学習はファミリー縛りかつティア別**([学習](TRAINING.md#モデルファミリー) の
+  列と [TRAINING.md](TRAINING.md#モデルファミリー) 参照):学習済み LoRA はその学習
+  ファミリーでしか動かず、学習は既定画像エンジンのファミリーをターゲットにし、
+  実証済みレシピは 12 GB クラスからの Z-Image(約 1–2 時間)と 24 GB クラスからの
+  Krea 2(約 2.5–4 時間)。12 GB 未満では学習の代わりに既製 LoRA を読み込んでください。
+- ライセンスの哲学:推奨は**デフォルトで安全** — ティアに Apache 勝者がいれば
+  Apache 2.0。ライセンス注意点のあるエンジンは利用可能なまま、設定とウィザードで
+  目に見える通知(`license_note`)を身に付けます。
 
-### Writing-assistant (LLM) sizing
+### 執筆アシスタント(LLM)のサイジング
 
-The wizard also suggests an Ollama model for the writing assistant, by the
-same VRAM reading (the LLM shares the GPU with renders — set
-`llm_keep_alive` to `0` in Settings to free its VRAM immediately after each
-call):
+ウィザードは同じ VRAM 読み取りで執筆アシスタント用の Ollama モデルも提案します
+(LLM はレンダリングと GPU を共用 — 設定で `llm_keep_alive` を `0` にすると
+毎呼び出し後に VRAM を即解放):
 
-| Best GPU VRAM | Suggested tag | Download | Notes |
+| 最良 GPU VRAM | 推奨タグ | ダウンロード | 備考 |
 | --- | --- | --- | --- |
-| under 12 GB (or no GPU) | `qwen3.5:4b` | 3.4 GB | 256K context; fine on CPU |
-| 12–31 GB | `qwen3.5:9b` | 6.6 GB | 256K context; the default |
-| 32 GB+ | `qwen3.5:35b-a3b` | 24 GB | MoE, 3B active — fast decode |
+| 12 GB 未満(GPU なし含む) | `qwen3.5:4b` | 3.4 GB | 256K コンテキスト;CPU でも十分 |
+| 12–31 GB | `qwen3.5:9b` | 6.6 GB | 256K コンテキスト;既定 |
+| 32 GB+ | `qwen3.5:35b-a3b` | 24 GB | MoE、アクティブ 3B — 高速デコード |
 
-**Settings is your shopping list.** If a pack references a file your ComfyUI
-can't see, StoryBored marks the pack **unavailable** and lists each missing file
-in **Settings** with everything the catalog knows about it: the destination
-folder, the size, the license, and — for files with a verified source — a
-direct link. Two ways to get a file installed:
+**設定画面があなたの買い物リストです。** パックが ComfyUI から見えないファイルを
+参照している場合、StoryBored はパックを**利用不可**とマークし、不足ファイルを
+**設定**に、カタログが知るすべてとともに一覧表示します:配置先フォルダ、サイズ、
+ライセンス、そして検証済みソースを持つファイルには直接リンク。ファイルを
+インストールする方法は 2 つ:
 
-- **In-app download.** Set the **engine models folder** in Settings (the
-  `COMFY_MODELS_DIR` env var — ComfyUI's `models/` directory; only possible
-  when StoryBored runs on the same machine/filesystem as ComfyUI). Every
-  missing file with a verified source then gets a **Download** button, and
-  "Download all missing" fetches the lot. Downloads run on their own job lane,
-  so they never block renders, and each file's size is verified against the
-  catalog.
-- **Manual placement.** Follow the source link (or the search guidance for
-  community files), download the file yourself, and drop it into the folder
-  shown. Keep the filename **exactly** as listed — availability matches by
-  filename.
+- **アプリ内ダウンロード。** 設定で**エンジンモデルフォルダ**を設定します
+  (`COMFY_MODELS_DIR` 環境変数 — ComfyUI の `models/` ディレクトリ;StoryBored が
+  ComfyUI と同じマシン/ファイルシステムで動くときのみ可能)。検証済みソースを持つ
+  不足ファイルには**ダウンロード**ボタンが付き、「不足分をすべてダウンロード」で
+  全部取得。ダウンロードは専用ジョブレーンで動くためレンダリングをブロックせず、
+  各ファイルのサイズはカタログに対して検証されます。
+- **手動配置。** ソースリンクを辿る(またはコミュニティファイルの検索ガイダンスに
+  従う)、自分でファイルをダウンロードし、表示されたフォルダに置く。ファイル名は
+  一覧と**完全に**同じに保ってください — 利用可否はファイル名で一致します。
 
-Either way: once the file is in place, restart or refresh ComfyUI so it
-re-scans, then hit **Refresh** on the Settings engines panel — the pack flips
-to available.
+どちらの方法でも:ファイルが置けたら ComfyUI を再起動または更新して再スキャンさせ、
+設定のエンジンパネルで**更新**を押します — パックが利用可能に切り替わります。
 
-## Where ComfyUI keeps each kind of file
+## ComfyUI が各種ファイルを置く場所
 
-The manifests key each requirement by the ComfyUI node that loads it. That node
-tells you which standard ComfyUI models folder the file belongs in:
+マニフェストは各要件を、それをロードする ComfyUI ノードでキー付けします。そのノードが、
+ファイルが属すべき標準 ComfyUI モデルフォルダを教えます:
 
-| Loader node in the manifest | ComfyUI folder |
+| マニフェストのローダーノード | ComfyUI フォルダ |
 | --- | --- |
-| `UNETLoader` | `models/diffusion_models` (a.k.a. `models/unet`) |
-| `CLIPLoader` | `models/text_encoders` (a.k.a. `models/clip`) |
+| `UNETLoader` | `models/diffusion_models`(別名 `models/unet`) |
+| `CLIPLoader` | `models/text_encoders`(別名 `models/clip`) |
 | `VAELoader` | `models/vae` |
 | `LoraLoader` / `LoraLoaderModelOnly` | `models/loras` |
 | `CheckpointLoaderSimple` | `models/checkpoints` |
 
-ComfyUI's own documentation is the authority on installing models and on where
-each folder lives: <https://docs.comfy.org/>.
+モデルのインストールと各フォルダの場所については ComfyUI 自身のドキュメントが
+権威です: <https://docs.comfy.org/>
 
-## The catalog
+## カタログ
 
-`workflows/catalog.json` maps each filename the shipped packs need to its
-source. Entries with a URL were **verified against the hosting site** (exact
-path, byte size, license) — those power the in-app downloader. Entries marked
-*community* are community-published files with no canonical home; we don't
-link them, and the notes say where to look. You can extend or override the
-catalog by dropping a `catalog.json` with the same shape into
-`DATA_DIR/workflows/` (useful for your own packs — same filename wins).
+<a id="the-catalog"></a>
 
-The tables below summarize the shipped catalog. Sizes are the verified byte
-counts, rounded.
+`workflows/catalog.json` は同梱パックが必要とする各ファイル名をそのソースへ
+マップします。URL を持つエントリは**ホスティングサイトに対して検証済み**です
+(正確なパス、バイトサイズ、ライセンス)— これらがアプリ内ダウンローダーの
+原動力です。*community* とマークされたエントリは正規の場所のないコミュニティ公開
+ファイルです;私たちはリンクせず、備考が探し場所を述べます。同じ形の `catalog.json` を
+`DATA_DIR/workflows/` に置けばカタログを拡張・上書きできます
+(自分のパックに便利 — 同じファイル名が勝ちます)。
 
-### Krea 2 image packs (`krea2-basic`, `krea2-realism`)
+以下の表は同梱カタログの要約です。サイズは検証済みバイト数の丸めです。
 
-Both packs build on the same base + turbo-distill LoRA. `krea2-basic` needs
-only the first four rows; `krea2-realism` adds the community realism stack.
+### Krea 2 画像パック(`krea2-basic`、`krea2-realism`)
 
-**Base files** — verified, hosted by the **Comfy-Org** organization on Hugging
-Face in [`Comfy-Org/Krea-2`](https://huggingface.co/Comfy-Org/Krea-2), all
-under the Krea 2 Community License:
+両パックは同じベース + turbo-distill LoRA の上に構築されます。`krea2-basic` は
+最初の 4 行のみ必要;`krea2-realism` はコミュニティ realism スタックを追加します。
 
-| File | Folder | Size |
+**ベースファイル** — 検証済み、Hugging Face の [`Comfy-Org/Krea-2`](https://huggingface.co/Comfy-Org/Krea-2)
+で **Comfy-Org** 組織がホスト、すべて Krea 2 Community License の下:
+
+| ファイル | フォルダ | サイズ |
 | --- | --- | --- |
 | `krea2_raw_fp8_scaled.safetensors` | `diffusion_models` | 13.1 GB |
 | `qwen3vl_4b_fp8_scaled.safetensors` | `text_encoders` | 5.2 GB |
 | `qwen_image_vae.safetensors` | `vae` | 254 MB |
 
-**Turbo distill LoRA** (both packs) — community, but with a known page:
-`(Krea 2) 8-Step Turbo Distill Rank 64 V2026.1.safetensors` (~469 MB,
-inherits the Krea 2 Community License) is the "Krea-2 Turbo 8-Step
-Distillation LoRA (SVD Extract)" [on Civitai](https://civitai.com/models/2746698),
-version V2026.1. Civitai downloads need a (free) logged-in account, so this
-one is manual — keep the filename exactly as-is, parentheses and spaces
-included. Folder: `loras`.
+**Turbo distill LoRA**(両パック)— コミュニティだが既知のページあり:
+`(Krea 2) 8-Step Turbo Distill Rank 64 V2026.1.safetensors`(約 469 MB、
+Krea 2 Community License を継承)は [Civitai 上](https://civitai.com/models/2746698)の
+「Krea-2 Turbo 8-Step Distillation LoRA (SVD Extract)」バージョン V2026.1。
+Civitai のダウンロードには(無料の)ログインアカウントが必要なため、これは手動 —
+ファイル名は括弧と空白を含めそのまま維持してください。フォルダ:`loras`。
 
-**Realism LoRA stack** (`krea2-realism` only) — all community files, folder
-`loras`. These circulate on Hugging Face, Civitai and Tensor.Art under exactly
-these filenames; we can't point at a canonical, licensed home for any of them,
-so search the hubs yourself and sanity-check what you grab (a real LoRA is
-megabytes to gigabytes — beware byte-sized placeholder reuploads):
+**Realism LoRA スタック**(`krea2-realism` のみ)— すべてコミュニティファイル、
+フォルダ `loras`。これらはまさにこのファイル名で Hugging Face、Civitai、Tensor.Art を
+流通しています;いずれにも正規のライセンス済みの置き場所を指せないため、ハブを
+自分で検索し、手に入れたものを確認してください(本物の LoRA は MB〜GB 単位 —
+バイトサイズのプレースホルダ再アップロードに注意):
 
-| File | Known origin |
+| ファイル | 既知の由来 |
 | --- | --- |
-| `krea2filterbypass3.safetensors` | none found — search hubs; 160-byte stub reuploads exist under this name |
-| `Krea2-realism-V2.safetensors` | reuploads on Hugging Face |
-| `Detailer-KREA2.safetensors` | none found — search hubs |
-| `bloomgirls-ultrarealism-krea2_4k.safetensors` | Tensor.Art ("[KR2]BloomGirls UltraRealism") |
-| `lenovo_krea2.safetensors` | Civitai ("Lenovo Ultrareal", Krea 2 build) |
-| `RealisticSnapshotKrea2.safetensors` | Civitai ("Realistic Snapshot", Krea 2 build) |
-| `realism_engine_krea2_v3.1.safetensors` | reuploads on Hugging Face |
+| `krea2filterbypass3.safetensors` | 見つからず — ハブを検索;この名前で 160 バイトのスタブ再アップロードが存在 |
+| `Krea2-realism-V2.safetensors` | Hugging Face に再アップロード |
+| `Detailer-KREA2.safetensors` | 見つからず — ハブを検索 |
+| `bloomgirls-ultrarealism-krea2_4k.safetensors` | Tensor.Art(「[KR2]BloomGirls UltraRealism」) |
+| `lenovo_krea2.safetensors` | Civitai(「Lenovo Ultrareal」、Krea 2 ビルド) |
+| `RealisticSnapshotKrea2.safetensors` | Civitai(「Realistic Snapshot」、Krea 2 ビルド) |
+| `realism_engine_krea2_v3.1.safetensors` | Hugging Face に再アップロード |
 
-If you'd rather not chase the stack, start with `krea2-basic` — and remember
-you can toggle individual realism LoRAs off in Settings; a LoRA you've
-disabled is no longer required for the pack to count as available.
+スタックを追いかけたくない場合は `krea2-basic` から始めてください — そして設定では
+個々の realism LoRA を OFF にできることを忘れないでください;無効化した LoRA は
+パックが利用可能と見なされるための要件から外れます。
 
-### Z-Image Turbo (`z-image-turbo`)
+### Z-Image Turbo(`z-image-turbo`)
 
-All verified, hosted by **Comfy-Org** in
-[`Comfy-Org/z_image_turbo`](https://huggingface.co/Comfy-Org/z_image_turbo),
-all **Apache 2.0** — the whole pack is one-click downloadable:
+すべて検証済み、[`Comfy-Org/z_image_turbo`](https://huggingface.co/Comfy-Org/z_image_turbo)
+で **Comfy-Org** がホスト、すべて **Apache 2.0** — パック全体がワンクリック
+ダウンロード可能です:
 
-| File | Folder | Size |
+| ファイル | フォルダ | サイズ |
 | --- | --- | --- |
 | `z_image_turbo_int8_convrot.safetensors` | `diffusion_models` | 6.2 GB |
 | `qwen_3_4b_fp8_mixed.safetensors` | `text_encoders` | 5.6 GB |
 | `ae.safetensors` | `vae` | 335 MB |
 
-Catalog alternates (swap via the pack's *Base model* slot in Settings):
-`z_image_turbo_bf16.safetensors` (12.3 GB, full precision, for 16 GB+ cards)
-and `z_image_turbo_nvfp4.safetensors` (4.5 GB, **RTX 50-series/Blackwell
-only**). Needs ComfyUI ≥ 0.3.75 (Z-Image nodes are core since then).
+カタログ代替(設定のパックの*ベースモデル*スロットで差し替え):
+`z_image_turbo_bf16.safetensors`(12.3 GB、フル精度、16 GB+ カード向け)と
+`z_image_turbo_nvfp4.safetensors`(4.5 GB、**RTX 50 シリーズ/Blackwell のみ**)。
+ComfyUI ≥ 0.3.75 が必要(Z-Image ノードはこれ以降コア)。
 
-### Qwen-Image 2512 (`qwen-image-2512`)
+### Qwen-Image 2512(`qwen-image-2512`)
 
-All verified: model files in
-[`Comfy-Org/Qwen-Image_ComfyUI`](https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI),
-the Lightning LoRA in
+すべて検証済み:モデルファイルは
+[`Comfy-Org/Qwen-Image_ComfyUI`](https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI)、
+Lightning LoRA は
 [`lightx2v/Qwen-Image-Lightning`](https://huggingface.co/lightx2v/Qwen-Image-Lightning);
-the entire stack is **Apache 2.0**:
+スタック全体が **Apache 2.0**:
 
-| File | Folder | Size |
+| ファイル | フォルダ | サイズ |
 | --- | --- | --- |
 | `qwen_image_2512_fp8_e4m3fn.safetensors` | `diffusion_models` | 20.4 GB |
 | `qwen_2.5_vl_7b_fp8_scaled.safetensors` | `text_encoders` | 9.4 GB |
-| `qwen_image_vae.safetensors` | `vae` | 254 MB — **same file the Krea 2 packs use**, one download serves both |
+| `qwen_image_vae.safetensors` | `vae` | 254 MB — **Krea 2 パックと同じファイル**、1 回のダウンロードで両方に対応 |
 | `Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors` | `loras` | 850 MB |
 
-Needs ComfyUI ≥ 0.3.49 (Qwen-Image nodes are core since then). In practice
-fp8 model + fp8 text encoder sit around 86% of a 24 GB card.
+ComfyUI ≥ 0.3.49 が必要(Qwen-Image ノードはこれ以降コア)。実際には fp8 モデル +
+fp8 テキストエンコーダで 24 GB カードの約 86% を使います。
 
-### Wan 2.2 video packs (`wan22-ti2v-5b`, `wan22-i2v-14b`)
+### Wan 2.2 動画パック(`wan22-ti2v-5b`、`wan22-i2v-14b`)
 
-All verified, hosted by **Comfy-Org** in
-[`Comfy-Org/Wan_2.2_ComfyUI_Repackaged`](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged),
-all **Apache 2.0**. Both packs share the text encoder; the VAEs differ
-(that's a Wan quirk, not a mistake):
+すべて検証済み、[`Comfy-Org/Wan_2.2_ComfyUI_Repackaged`](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged)
+で **Comfy-Org** がホスト、すべて **Apache 2.0**。両パックはテキストエンコーダを
+共有;VAE は異なります(Wan の癖であり誤りではありません):
 
-| File | Folder | Size | Used by |
+| ファイル | フォルダ | サイズ | 使用パック |
 | --- | --- | --- | --- |
 | `wan2.2_ti2v_5B_fp16.safetensors` | `diffusion_models` | 10.0 GB | 5B |
 | `wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors` | `diffusion_models` | 14.3 GB | 14B |
 | `wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors` | `diffusion_models` | 14.3 GB | 14B |
 | `wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors` | `loras` | 1.2 GB | 14B |
 | `wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors` | `loras` | 1.2 GB | 14B |
-| `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | `text_encoders` | 6.7 GB | both |
+| `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | `text_encoders` | 6.7 GB | 両方 |
 | `wan2.2_vae.safetensors` | `vae` | 1.4 GB | 5B |
 | `wan_2.1_vae.safetensors` | `vae` | 254 MB | 14B |
 
-The 14B pack loads its two expert models **sequentially** (high-noise for
-the early steps, low-noise for the late ones), so a 24 GB card never holds
-both at once. Wan 2.2 output is **silent** — the animatic exporter gives
-those clips silence, like stills. Wan nodes are ComfyUI core (summer 2025+).
+14B パックは 2 つのエキスパートモデルを**順に**ロードします(初期ステップは
+high-noise、後期は low-noise)ため、24 GB カードが両方を同時に保持することは
+ありません。Wan 2.2 の出力は**無音** — アニマティック書き出しはスチルと同様、
+それらのクリップに無音を与えます。Wan ノードは ComfyUI コア(2025 年夏以降)です。
 
-### MiniMax H3 video pack (`minimax-h3-i2v`)
+### MiniMax H3 動画パック(`minimax-h3-i2v`)
 
-Animates an approved still into a short clip with generated audio. Text
-encoder and VAEs are verified in the official
-[`Comfy-Org/MiniMax-H3`](https://huggingface.co/Comfy-Org/MiniMax-H3) Hugging
-Face repo; all four files are under the MiniMax H3 Community License
-Agreement:
+承認済みスチルを生成音声付きの短いクリップにアニメートします。テキストエンコーダと
+VAE は公式 [`Comfy-Org/MiniMax-H3`](https://huggingface.co/Comfy-Org/MiniMax-H3)
+Hugging Face リポジトリで検証済み;4 ファイルすべて MiniMax H3 Community License
+Agreement の下:
 
-| File | Folder | Size | Source |
+| ファイル | フォルダ | サイズ | ソース |
 | --- | --- | --- | --- |
-| `minimax_h3_fl2va_pruned_nvfp4.safetensors` | `diffusion_models` | 12.5 GB | community NVFP4 repo (verified, see note) |
+| `minimax_h3_fl2va_pruned_nvfp4.safetensors` | `diffusion_models` | 12.5 GB | コミュニティ NVFP4 リポジトリ(検証済み、備考参照) |
 | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | `text_encoders` | 15.7 GB | Comfy-Org/MiniMax-H3 |
 | `minimax_h3_video_vae_fp16.safetensors` | `vae` | 5.2 GB | Comfy-Org/MiniMax-H3 |
 | `minimax_h3_audio_vae_fp32.safetensors` | `vae` | 605 MB | Comfy-Org/MiniMax-H3 |
 
-**Note on the video UNET:** the official Comfy-Org repo ships bf16 /
-fp8_scaled / int8_convrot variants under *different* filenames; the exact
-NVFP4 file this pack references lives in community quantization repos on
-Hugging Face (the catalog links a size-verified one; byte-identical mirrors
-exist). If you use a different variant, swap the pack's video model in
-Settings — availability follows your choice.
+**動画 UNET について:** 公式 Comfy-Org リポジトリは bf16 / fp8_scaled / int8_convrot
+の各バリエーションを*異なる*ファイル名で出荷しています;このパックが参照する正確な
+NVFP4 ファイルは Hugging Face のコミュニティ量子化リポジトリにあります
+(カタログはサイズ検証済みの 1 つへリンク;バイト同一のミラーが存在)。
+別のバリエーションを使う場合は、設定でパックの動画モデルを差し替えてください —
+利用可否はあなたの選択に従います。
 
-**Prefer quantized builds.** This is a hard-won lesson, not a guess: an
-unquantized bf16 video UNET around 32 GB forces massive VRAM offload on a
-24 GB-class card, while the quantized build of the same model runs fully
-on-GPU. When `COMFY_MODELS_DIR` is set, StoryBored stats the files behind the
-model dropdowns and warns on anything over 24 GB.
+**量子化ビルドを推奨。** これは苦労して得た教訓であり推測ではありません:32 GB 前後の
+非量子化 bf16 動画 UNET は 24 GB クラスカードで大規模な VRAM オフロードを強制しますが、
+同じモデルの量子化ビルドは完全に GPU 上で動きます。`COMFY_MODELS_DIR` が設定されて
+いる場合、StoryBored はモデルドロップダウンの背後のファイルを stat し、24 GB 超に
+警告します。
 
-## VRAM expectations
+## VRAM の目安
 
-See [What can my GPU do?](#what-can-my-gpu-do) at the top — that matrix *is*
-the sizing guide, and the setup wizard applies it automatically. The board,
-UI and animatic export need no GPU at all.
+冒頭の [自分の GPU は何ができる?](#自分の-gpu-は何ができる) を参照 — あの
+マトリクス*こそが*サイジングガイドであり、セットアップウィザードが自動適用します。
+ボード、UI、アニマティック書き出しには GPU は一切不要です。
 
-## Custom nodes are a separate requirement
+## カスタムノードは別の要件
 
-Model files aren't the only thing a pack can miss: the graphs also use node
-classes your ComfyUI may not have (a custom node pack, or a core node newer
-than your install). Settings reports those separately as *missing custom
-nodes* — see [WORKFLOWS.md](WORKFLOWS.md#custom-nodes-what-availability-checks-and-what-the-shipped-packs-need)
-for what the shipped packs assume and which node packs provide it.
+パックに欠けるのはモデルファイルだけではありません:グラフは、あなたの ComfyUI が
+持っていないかもしれないノードクラス(カスタムノードパック、またはインストールより
+新しいコアノード)も使います。設定はそれらを*カスタムノード不足*として別に報告します —
+同梱パックの前提とそれを提供するノードパックについては
+[WORKFLOWS.md](WORKFLOWS.md#custom-nodes-what-availability-checks-and-what-the-shipped-packs-need)
+を参照。
 
-## Bring your own models
+## 自分のモデルを持ち込む
 
-None of these files are special to StoryBored — they're ordinary ComfyUI model
-files, and the default packs are just one possible setup. If you already have a
-ComfyUI you generate with, the fastest path is to **wrap your own workflow as a
-pack**: run `python -m storybored validate-pack --write` to derive its
-`required_models` from the graph, and skip the downloads above entirely.
-[WORKFLOWS.md](WORKFLOWS.md) walks through authoring a pack (including a plain
-SDXL example) step by step. Add a `DATA_DIR/workflows/catalog.json` entry per
-file if you want your own packs' missing-model lists to carry links and sizes
-too. StoryBored will run any pack whose referenced files are present in your
-ComfyUI — nothing more.
+これらのファイルはどれも StoryBored 専用ではありません — 普通の ComfyUI モデル
+ファイルであり、既定パックはありうる構成の一例にすぎません。既に生成に使っている
+ComfyUI があるなら、最速の道は**自分のワークフローをパックとしてラップすること**:
+`python -m storybored validate-pack --write` を実行してグラフから
+`required_models` を導出すれば、上記のダウンロードを完全にスキップできます。
+[WORKFLOWS.md](WORKFLOWS.md) がパック作成(平文 SDXL の例を含む)を段階的に
+案内します。自分のパックの不足モデル一覧にもリンクとサイズを持たせたい場合は、
+ファイルごとに `DATA_DIR/workflows/catalog.json` エントリを追加してください。
+StoryBored は参照ファイルが ComfyUI に存在する任意のパックを実行します — それ以上の
+条件はありません。

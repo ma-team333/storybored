@@ -1,116 +1,112 @@
 # FAQ
 
-Honest answers to the questions we expect (and the skepticism we'd have too).
+予想される質問への正直な回答(そして私たち自身も持つであろう懐疑心)。
 
-## Is this just a ComfyUI wrapper?
+## これは単なる ComfyUI ラッパーでは?
 
-ComfyUI does the generating; StoryBored does the filmmaking — the board, takes,
-approvals, characters, continuity, and the animatic at the end. Whether that's
-"just a wrapper" is for you to judge, but it's not a black box:
+生成は ComfyUI が行い、映画制作の側 — ボード、テイク、承認、キャラクター、
+連続性、最後のアニマティック — は StoryBored が行います。それが「ラッパーに
+すぎない」かどうかはあなたが判断することですが、ブラックボックスではありません:
 
-- Every engine is a plain ComfyUI graph plus a small manifest, sitting in a
-  folder you can read ([WORKFLOWS.md](WORKFLOWS.md)).
-- You can import your own ComfyUI workflow through the Settings wizard and it
-  becomes an engine.
-- You can export any engine **back out** as standard ComfyUI API JSON — with
-  your model swaps and LoRA edits applied — and drop it straight into ComfyUI.
+- すべてのエンジンは素の ComfyUI グラフ + 小さなマニフェストで、読めるフォルダに
+  置かれています([WORKFLOWS.md](WORKFLOWS.md))。
+- 自分の ComfyUI ワークフローを設定ウィザードから読み込めば、それがエンジンになります。
+- 任意のエンジンを標準 ComfyUI API JSON として**書き出し直す**こともできます —
+  モデル差し替えと LoRA 編集が適用された状態で — そのまま ComfyUI に取り込めます。
 
-If you outgrow StoryBored, you leave with working graphs, not lock-in.
+StoryBored を卒業したくなったら、動くグラフを持って去れます。ロックインはありません。
 
-## How is this different from Comfy MCP / driving ComfyUI with an AI agent?
+## Comfy MCP や AI エージェントで ComfyUI を操作するのと何が違うの?
 
-Comfy MCP is great, and frankly it validates the premise: Comfy themselves are
-saying node graphs shouldn't be the interface. But MCP is a *control plane* —
-you bring an agent client (and in practice, usually a hosted frontier model),
-and each session is a conversation.
+Comfy MCP は素晴らしく、率直に言って前提を検証しています:Comfy 自身が
+「ノードグラフはインターフェイスであるべきではない」と言っているのです。しかし MCP は
+*コントロールプレーン*です — エージェントクライアント(そして実際には大抵、
+ホステッドなフロンティアモデル)を持ってきて、各セッションは会話です。
 
-StoryBored is a *place your film lives*. Projects → scenes → shots → takes →
-picks → approvals is state you come back to for weeks, not a chat log.
-Characters are a product feature (`@handle` casting, train-from-photos, scored
-checkpoint shootouts), continuity is machinery (per-scene looks, master
-plates), and the output is an actual animatic MP4. It also runs entirely
-offline with a local LLM — no agent subscription anywhere in the loop.
+StoryBored は*映画が住む場所*です。プロジェクト → シーン → ショット → テイク →
+選択 → 承認は、チャットログではなく何週間も戻ってくる状態です。キャラクターは
+製品機能(`@handle` 起用、写真からの学習、採点付きチェックポイント選抜テスト)、
+連続性は仕組み(シーンごとのルック、マスタープレート)、出力は実際のアニマティック MP4
+です。さらにローカル LLM で完全オフラインで動きます — ループのどこにも
+エージェントのサブスクリプションはありません。
 
-Short version: MCP answers "how do I run a workflow without the graph."
-StoryBored answers "where does my film live." An MCP surface for StoryBored's
-own API is an obvious future step — the two compose rather than compete.
+短く言えば:MCP は「グラフなしでワークフローをどう実行するか」に答え、
+StoryBored は「自分の映画がどこに住むか」に答えます。StoryBored 自身の API の
+MCP サーフェスは明らかな将来の一歩です — 2 つは競合ではなく組み合わせです。
 
-## Does anything leave my machine?
+## 何かがマシンの外に出る?
 
-No. No account, no telemetry, no cloud calls. Generation happens in your
-ComfyUI, the writing assistant is any OpenAI-compatible endpoint (the README
-steers you to local [Ollama](https://ollama.com)), and the server binds to
-`127.0.0.1` unless you opt out. The only network traffic is model files *you*
-choose to download from the verified catalog.
+いいえ。アカウントもテレメトリもクラウド呼び出しもありません。生成はあなたの
+ComfyUI で行われ、執筆アシスタントは OpenAI 互換の任意のエンドポイント(README は
+ローカルの [Ollama](https://ollama.com) を案内しています)、サーバーは opt-out
+しない限り `127.0.0.1` にバインドします。唯一のネットワークトラフィックは、
+あなたが検証済みカタログからダウンロードを選んだモデルファイルです。
 
-## Do I need an expensive GPU?
+## 高価な GPU が必要?
 
-No. The tiers are honest ([MODELS.md](MODELS.md)):
+いいえ。ティアは正直です([MODELS.md](MODELS.md)):
 
-- **No GPU / under 6 GB** — boards, script breakdown, and animatic export
-  still work. Generation doesn't.
-- **6–11 GB** — Apache-licensed stills (Z-Image Turbo, with offloading).
-- **12 GB+** — stills fast, plus silent video (Wan 2.2 5B).
-- **16–24 GB+** — the full menu, including video with audio as a labeled
-  power option.
+- **GPU なし / 6 GB 未満** — ボード、脚本分解、アニマティック書き出しは動作。
+  生成はできません。
+- **6–11 GB** — Apache ライセンスのスチル(Z-Image Turbo、オフロード付き)。
+- **12 GB+** — 高速なスチルに加え無音動画(Wan 2.2 5B)。
+- **16–24 GB+** — フルメニュー。音声付き動画はラベル付き上級オプションとして。
 
-The setup wizard reads your actual VRAM and recommends accordingly; the app
-shows *measured* render speed per engine on your machine, and flags engines
-that would page themselves to death instead of letting you find out the hard
-way.
+セットアップウィザードは実際の VRAM を読み取ってそれに応じて推奨し、アプリは
+マシンごとのエンジンの*実測*レンダリング速度を表示し、スラッシングで死ぬことになる
+エンジンを、痛い目を見る前にフラグします。
 
-## Do I need an API key or a subscription?
+## API キーやサブスクリプションは必要?
 
-No. MIT-licensed app, your GPU, a free local LLM. If you'd rather point the
-writing assistant at a hosted API you can, but nothing requires it.
+いいえ。MIT ライセンスのアプリ、あなたの GPU、無料のローカル LLM。執筆アシスタントを
+ホステッド API に向けることもできますが、必須ではありません。
 
-## Can I use my own models and workflows?
+## 自分のモデルやワークフローを使える?
 
-Yes — that's most of the Settings screen. Swap the base model per engine,
-toggle or re-strength every baked LoRA, layer your own style LoRAs, import a
-ComfyUI workflow export as a new engine. Pack files on disk are never
-modified, so your edits survive updates.
+はい — 設定画面の大部分がそれです。エンジンごとにベースモデルを差し替え、焼き込み
+LoRA をすべて ON/OFF・強度変更し、独自のスタイル LoRA を重ね、ComfyUI ワークフロー
+書き出しを新しいエンジンとして読み込む。ディスク上のパックファイルは決して
+変更されないため、編集はアップデート後も生き残ります。
 
-## What's the deal with model licenses?
+## モデルライセンスはどうなってる?
 
-We verify and surface; you choose. Every catalog entry records its source and
-license, tier defaults prefer Apache 2.0 wherever a tier has an Apache-clean
-winner, and the exceptions are labeled in the app itself — Krea 2's community
-license (revenue cap) and MiniMax H3's territory exclusions (US/EU/UK/South
-Korea) are stated where you select them, not buried here.
+私たちは検証と情報表示を行い、選ぶのはあなたです。すべてのカタログエントリはソースと
+ライセンスを記録し、ティアの既定は Apache クリーンな勝者がいる限り Apache 2.0 を
+優先し、例外はアプリ自体にラベル表示されます — Krea 2 の community license
+(収益上限)と MiniMax H3 の領域除外(US/EU/UK/韓国)は、選択する場所で述べられており、
+ここに埋もれてはいません。
 
-## Can ComfyUI live on a different machine?
+## ComfyUI は別マシンに置ける?
 
-Yes. Point `COMFYUI_URL` (or the Settings field) at any reachable ComfyUI — a
-LAN box, a rented GPU. StoryBored itself is light and runs anywhere Python
-does.
+はい。`COMFYUI_URL`(または設定フィールド)を到達可能な任意の ComfyUI — LAN の
+マシン、レンタル GPU — に向けてください。StoryBored 自体は軽量で、Python が動く
+どこでも動きます。
 
-## Does it run on Windows?
+## Windows で動く?
 
-Yes, natively — board, rendering, script AI, animatics. The one exception is
-the train-a-character-from-photos pipeline, which shells out to bash: run
-StoryBored inside WSL2 if you want training, or stay native and import
-ready-made LoRAs (that works fine).
+はい、ネイティブで — ボード、レンダリング、脚本 AI、アニマティック。唯一の例外は
+bash を呼び出す写真からのキャラクター学習パイプラインです:学習を使いたいなら
+WSL2 内で StoryBored を実行するか、ネイティブのまま既製 LoRA を読み込んでください
+(それなら問題なく動きます)。
 
-## How does character consistency actually work?
+## キャラクターの一貫性は実際どう動く?
 
-Type `@sam` in a shot description. StoryBored substitutes the character's
-trigger phrase into the prompt and splices their LoRA into the ComfyUI graph
-at render time. Get the LoRA by importing one you already have, or by training
-from 20–40 photos in the wizard — after training, a *shootout* renders the
-saved checkpoints at several strengths, scores them for likeness, and lets you
-apply the winner with one click. Details in [TRAINING.md](TRAINING.md).
+ショットの説明に `@sam` と入力します。StoryBored はキャラクターの trigger フレーズを
+プロンプトに代入し、レンダリング時にその LoRA を ComfyUI グラフへスプライスします。
+LoRA は、既に持っているものを読み込むか、ウィザードで 20〜40 枚の写真から学習して
+入手します — 学習後、*選抜テスト(shootout)* が保存済みチェックポイントを複数の強度で
+レンダリングして類似度を採点し、勝者をワンクリックで適用できます。詳細は
+[TRAINING.md](TRAINING.md)。
 
-## Is this replacing storyboard artists?
+## これは絵コンテ作家の代替?
 
-For productions that hire boards artists — no, and it shouldn't. StoryBored is
-previz for the far larger group who were never going to commission boards:
-shorts, student films, pitches, music videos, one-person crews. The realistic
-alternative to StoryBored isn't a hired artist; it's a shot list in a
-spreadsheet and no boards at all.
+ボード作家を雇う制作にとっては — いいえ、そしてそうあるべきではありません。
+StoryBored は、絵コンテを発注することなど決してなかったはずの、はるかに大きな集団のための
+プレビズです:短編、学生映画、ピッチ、MV、一人クルー。StoryBored の現実的な対抗馬は
+雇われた作家ではなく、スプレッドシートのショットリストと、ボードが一切ないことです。
 
-## Can I contribute?
+## 貢献できる?
 
-Please — see [CONTRIBUTING.md](../CONTRIBUTING.md). Engine packs for models we
-haven't covered are especially welcome: they're data, not code, so you can
-contribute one without touching Python.
+ぜひ — [CONTRIBUTING.md](../CONTRIBUTING.md) を参照。まだカバーしていないモデルの
+エンジンパックは特に歓迎です:パックはデータでありコードではないため、Python に
+触れずに貢献できます。

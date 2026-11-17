@@ -1,12 +1,12 @@
 {
-  "_comment": "Model catalog for the shipped packs: filename -> where to get it. Entries with a 'source' URL were verified against the hosting site's API (URL, exact size, license) and are auto-downloadable when COMFY_MODELS_DIR is configured. Entries with source 'community' are community-published files we won't link: search the named hubs for the exact filename and place it yourself. A catalog.json in DATA_DIR/workflows/ merges over this one (same filename wins).",
+  "_comment": "同梱パック向けモデルカタログ:ファイル名 -> 入手先。「source」に URL があるエントリーはホスティングサイトの API で検証済み(URL・正確なサイズ・ライセンス)で、COMFY_MODELS_DIR を設定すれば自動ダウンロード可能。source が「community」のエントリーはリンクしないコミュニティ公開ファイルなので、各ハブで正確なファイル名を検索して自分で配置する。DATA_DIR/workflows/ にある catalog.json はこのファイルにマージされ、同じファイル名のエントリーが優先される。",
   "krea2_raw_fp8_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_raw_fp8_scaled.safetensors",
     "page": "https://huggingface.co/Comfy-Org/Krea-2",
     "size_bytes": 13141730784,
     "license": "Krea 2 Community License",
     "folder": "diffusion_models",
-    "notes": "Krea 2 base model, fp8-scaled ComfyUI repackage by Comfy-Org."
+    "notes": "Krea 2 のベースモデル。Comfy-Org による fp8 スケール済み ComfyUI 再パッケージ版。"
   },
   "qwen3vl_4b_fp8_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
@@ -14,7 +14,7 @@
     "size_bytes": 5242467968,
     "license": "Krea 2 Community License",
     "folder": "text_encoders",
-    "notes": "Qwen3-VL 4B text encoder used by Krea 2, fp8-scaled."
+    "notes": "Krea 2 が使用する Qwen3-VL 4B テキストエンコーダー(fp8 スケール済み)。"
   },
   "qwen_image_vae.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors",
@@ -22,7 +22,7 @@
     "size_bytes": 253806246,
     "license": "Krea 2 Community License",
     "folder": "vae",
-    "notes": "Qwen-image VAE used by Krea 2."
+    "notes": "Krea 2 が使用する Qwen-image VAE。"
   },
   "minimax_h3_fl2va_pruned_nvfp4.safetensors": {
     "source": "https://huggingface.co/lilcheaty/MiniMax-H3-NVFP4/resolve/main/minimax_h3_fl2va_pruned_nvfp4.safetensors",
@@ -30,7 +30,7 @@
     "size_bytes": 12528636800,
     "license": "MiniMax H3 Community License Agreement",
     "folder": "diffusion_models",
-    "notes": "NVFP4 quantization of the pruned MiniMax H3 video model. This exact file lives in community NVFP4 repos (several byte-identical mirrors exist), NOT in the official Comfy-Org/MiniMax-H3 repo, which ships bf16 / fp8_scaled / int8_convrot variants under different filenames. Prefer a quantized build like this one: an unquantized ~26GB+ bf16 UNET offloads heavily on a 24 GB card."
+    "notes": "プルーニング済み MiniMax H3 動画モデルの NVFP4 量子化版。このファイルそのものはコミュニティの NVFP4 リポジトリにあり(バイト同一のミラーが複数ある)、公式 Comfy-Org/MiniMax-H3 リポジトリには別ファイル名の bf16 / fp8_scaled / int8_convrot 版のみが置かれている。量子化ビルドを推奨:非量子化の約 26 GB 以上ある bf16 UNET は 24 GB カードではオフロードが重くなる。"
   },
   "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
@@ -38,7 +38,7 @@
     "size_bytes": 15687142551,
     "license": "MiniMax H3 Community License Agreement",
     "folder": "text_encoders",
-    "notes": "Qwen3-VL 32B text encoder for MiniMax H3, NVFP4/AWQ quantized, Comfy-Org repackage."
+    "notes": "MiniMax H3 用 Qwen3-VL 32B テキストエンコーダー。NVFP4/AWQ 量子化の Comfy-Org 再パッケージ版。"
   },
   "minimax_h3_video_vae_fp16.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors",
@@ -46,7 +46,7 @@
     "size_bytes": 5207808496,
     "license": "MiniMax H3 Community License Agreement",
     "folder": "vae",
-    "notes": "MiniMax H3 video VAE (fp16), Comfy-Org repackage."
+    "notes": "MiniMax H3 の動画 VAE (fp16)、Comfy-Org 再パッケージ版。"
   },
   "minimax_h3_audio_vae_fp32.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors",
@@ -54,49 +54,49 @@
     "size_bytes": 605254808,
     "license": "MiniMax H3 Community License Agreement",
     "folder": "vae",
-    "notes": "MiniMax H3 audio VAE (fp32), Comfy-Org repackage."
+    "notes": "MiniMax H3 の音声 VAE (fp32)、Comfy-Org 再パッケージ版。"
   },
   "(Krea 2) 8-Step Turbo Distill Rank 64 V2026.1.safetensors": {
     "source": "community",
     "page": "https://civitai.com/models/2746698",
     "license": "inherits the Krea 2 Community License (per the model page)",
     "folder": "loras",
-    "notes": "\"Krea-2 Turbo 8-Step Distillation LoRA (SVD Extract)\" on Civitai, version V2026.1 (~469 MB; Civitai reports 458,312.62 KB). Civitai downloads need a (free) logged-in account, so no direct URL — download from the model page and keep the filename exactly as-is, parentheses and spaces included."
+    "notes": "Civitai の「Krea-2 Turbo 8-Step Distillation LoRA (SVD Extract)」、バージョン V2026.1(約 469 MB。Civitai 表記は 458,312.62 KB)。Civitai のダウンロードには(無料の)ログインが必要なため直接 URL はなし。モデルページからダウンロードし、括弧やスペースを含めてファイル名を正確に保つこと。"
   },
   "krea2filterbypass3.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Community Krea 2 LoRA with no canonical home; search model hubs for the exact filename. Beware 160-byte placeholder reuploads that carry this name — a real LoRA is megabytes, not bytes."
+    "notes": "配布元が定かでないコミュニティ製 Krea 2 LoRA。モデルハブで正確なファイル名を検索すること。同名の 160 バイトのプレースホルダー再アップロードに注意。本物の LoRA はメガバイト単位のサイズがある。"
   },
   "Krea2-realism-V2.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Community realism LoRA; reuploads exist on Hugging Face under this exact filename. Search the hubs and check the file size before trusting a copy."
+    "notes": "コミュニティ製リアリズム LoRA。Hugging Face にこの正確なファイル名で再アップロードが存在する。ハブを検索し、コピーを信頼する前にファイルサイズを確認すること。"
   },
   "Detailer-KREA2.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Community detail-enhancer LoRA for Krea 2; no canonical home found. Search model hubs for the exact filename."
+    "notes": "Krea 2 用コミュニティ製ディテール強化 LoRA。正式な配布元は見つかっていない。モデルハブで正確なファイル名を検索すること。"
   },
   "bloomgirls-ultrarealism-krea2_4k.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Community LoRA originally published on Tensor.Art as \"[KR2]BloomGirls UltraRealism\"; find it there or search hubs for the exact filename."
+    "notes": "Tensor.Art で「[KR2]BloomGirls UltraRealism」として公開されていたコミュニティ LoRA。そこで探すか、モデルハブで正確なファイル名を検索すること。"
   },
   "lenovo_krea2.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Krea 2 build of the \"Lenovo Ultrareal\" LoRA published on Civitai; search there for the exact filename."
+    "notes": "Civitai で公開されている「Lenovo Ultrareal」LoRA の Krea 2 版。同サイトで正確なファイル名を検索すること。"
   },
   "RealisticSnapshotKrea2.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Krea 2 build of the \"Realistic Snapshot\" LoRA family published on Civitai; search there for the exact filename."
+    "notes": "Civitai で公開されている「Realistic Snapshot」LoRA ファミリーの Krea 2 版。同サイトで正確なファイル名を検索すること。"
   },
   "realism_engine_krea2_v3.1.safetensors": {
     "source": "community",
     "folder": "loras",
-    "notes": "Community \"realism engine\" LoRA; reuploads exist on Hugging Face under this exact filename. Check the file size before trusting a copy."
+    "notes": "コミュニティ製「realism engine」LoRA。Hugging Face にこの正確なファイル名で再アップロードが存在する。コピーを信頼する前にファイルサイズを確認すること。"
   },
   "z_image_turbo_int8_convrot.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors",
@@ -104,7 +104,7 @@
     "size_bytes": 6201001296,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Z-Image Turbo (Alibaba Tongyi, 6B) int8 build, Comfy-Org repackage — the z-image-turbo pack's default; runs on 8 GB-class cards."
+    "notes": "Z-Image Turbo (Alibaba Tongyi, 6B) の int8 ビルド、Comfy-Org 再パッケージ版。z-image-turbo パックのデフォルトで、8 GB クラスのカードで動作する。"
   },
   "z_image_turbo_bf16.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_bf16.safetensors",
@@ -112,7 +112,7 @@
     "size_bytes": 12309866400,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Z-Image Turbo full-precision bf16 build — optional higher-fidelity alternate for 16 GB+ cards; swap it in via the pack's Base model slot in Settings."
+    "notes": "Z-Image Turbo のフル精度 bf16 ビルド。16 GB 以上のカード向けの任意の高精度代替。設定のパックのベースモデルスロットで差し替える。"
   },
   "z_image_turbo_nvfp4.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_nvfp4.safetensors",
@@ -120,7 +120,7 @@
     "size_bytes": 4509509600,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Z-Image Turbo NVFP4 build — runs ONLY on NVIDIA Blackwell (RTX 50-series, sm_120) GPUs. Optional alternate; other cards should use the int8 or bf16 build."
+    "notes": "Z-Image Turbo の NVFP4 ビルド。NVIDIA Blackwell (RTX 50-series、sm_120) GPU でのみ動作する任意の代替版。他のカードは int8 か bf16 ビルドを使うこと。"
   },
   "qwen_3_4b_fp8_mixed.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
@@ -128,7 +128,7 @@
     "size_bytes": 5631994051,
     "license": "Apache-2.0",
     "folder": "text_encoders",
-    "notes": "Qwen3-4B text encoder for Z-Image, fp8-mixed, Comfy-Org repackage."
+    "notes": "Z-Image 用 Qwen3-4B テキストエンコーダー。fp8 ミックスの Comfy-Org 再パッケージ版。"
   },
   "ae.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors",
@@ -136,7 +136,7 @@
     "size_bytes": 335304388,
     "license": "Apache-2.0",
     "folder": "vae",
-    "notes": "VAE used by Z-Image (the FLUX-family autoencoder filename). If you already have an identical ae.safetensors from a FLUX install, ComfyUI will use it."
+    "notes": "Z-Image が使用する VAE(FLUX ファミリーのオートエンコーダーと同名)。FLUX 環境で入手した同一内容の ae.safetensors があれば ComfyUI がそれを使う。"
   },
   "qwen_image_2512_fp8_e4m3fn.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_2512_fp8_e4m3fn.safetensors",
@@ -144,7 +144,7 @@
     "size_bytes": 20430679144,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Qwen-Image 2512 base model, fp8, Comfy-Org repackage. Wants a 24 GB-class card together with its 7B text encoder."
+    "notes": "Qwen-Image 2512 ベースモデル。fp8 の Comfy-Org 再パッケージ版。7B テキストエンコーダーと合わせて 24 GB クラスのカードを想定。"
   },
   "qwen_2.5_vl_7b_fp8_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
@@ -152,7 +152,7 @@
     "size_bytes": 9384670680,
     "license": "Apache-2.0",
     "folder": "text_encoders",
-    "notes": "Qwen2.5-VL 7B text encoder for Qwen-Image, fp8-scaled, Comfy-Org repackage."
+    "notes": "Qwen-Image 用 Qwen2.5-VL 7B テキストエンコーダー。fp8 スケール済みの Comfy-Org 再パッケージ版。"
   },
   "Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors": {
     "source": "https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors",
@@ -160,7 +160,7 @@
     "size_bytes": 849608296,
     "license": "Apache-2.0",
     "folder": "loras",
-    "notes": "Lightning 8-step distillation LoRA for Qwen-Image by lightx2v — cuts sampling from 20 steps at cfg 2.5 to 8 steps at cfg 1."
+    "notes": "lightx2v 製 Qwen-Image 向け Lightning 8 ステップ蒸留 LoRA。20 ステップ・cfg 2.5 のサンプリングを 8 ステップ・cfg 1 に短縮する。"
   },
   "wan2.2_ti2v_5B_fp16.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors",
@@ -168,7 +168,7 @@
     "size_bytes": 9999658848,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Wan 2.2 TI2V-5B hybrid text/image-to-video model (fp16), Comfy-Org repackage. Fits 8 GB-class cards with ComfyUI's native offloading."
+    "notes": "Wan 2.2 TI2V-5B のテキスト/画像 to 動画ハイブリッドモデル (fp16)、Comfy-Org 再パッケージ版。ComfyUI のネイティブオフロードにより 8 GB クラスのカードに収まる。"
   },
   "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
@@ -176,7 +176,7 @@
     "size_bytes": 14294742832,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Wan 2.2 I2V-A14B high-noise expert (fp8) — handles the early, motion-defining sampling steps. The pack needs BOTH experts; they load sequentially."
+    "notes": "Wan 2.2 I2V-A14B の高ノイズエキスパート (fp8)。序盤のモーションを決めるサンプリングステップを担当。パックは両エキスパートを必要とし、順に読み込まれる。"
   },
   "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
@@ -184,7 +184,7 @@
     "size_bytes": 14294742832,
     "license": "Apache-2.0",
     "folder": "diffusion_models",
-    "notes": "Wan 2.2 I2V-A14B low-noise expert (fp8) — refines detail in the late sampling steps. The pack needs BOTH experts; they load sequentially."
+    "notes": "Wan 2.2 I2V-A14B の低ノイズエキスパート (fp8)。後半のサンプリングステップでディテールを仕上げる。パックは両エキスパートを必要とし、順に読み込まれる。"
   },
   "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
@@ -192,7 +192,7 @@
     "size_bytes": 1226977424,
     "license": "Apache-2.0",
     "folder": "loras",
-    "notes": "lightx2v 4-step distillation LoRA for the Wan 2.2 I2V high-noise expert (Comfy-Org repackage) — the official template's turbo path."
+    "notes": "Wan 2.2 I2V 高ノイズエキスパート向け lightx2v 4 ステップ蒸留 LoRA (Comfy-Org 再パッケージ版)。公式テンプレートのターボ構成。"
   },
   "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
@@ -200,7 +200,7 @@
     "size_bytes": 1226977424,
     "license": "Apache-2.0",
     "folder": "loras",
-    "notes": "lightx2v 4-step distillation LoRA for the Wan 2.2 I2V low-noise expert (Comfy-Org repackage) — the official template's turbo path."
+    "notes": "Wan 2.2 I2V 低ノイズエキスパート向け lightx2v 4 ステップ蒸留 LoRA (Comfy-Org 再パッケージ版)。公式テンプレートのターボ構成。"
   },
   "umt5_xxl_fp8_e4m3fn_scaled.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
@@ -208,7 +208,7 @@
     "size_bytes": 6735906897,
     "license": "Apache-2.0",
     "folder": "text_encoders",
-    "notes": "UMT5-XXL text encoder (fp8) shared by every Wan 2.2 model — one download serves both Wan packs."
+    "notes": "すべての Wan 2.2 モデルで共有される UMT5-XXL テキストエンコーダー (fp8)。1 回のダウンロードで両方の Wan パックを賄える。"
   },
   "wan2.2_vae.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan2.2_vae.safetensors",
@@ -216,7 +216,7 @@
     "size_bytes": 1409400960,
     "license": "Apache-2.0",
     "folder": "vae",
-    "notes": "Wan 2.2 VAE — used by the TI2V-5B model only (the 14B experts use the Wan 2.1 VAE)."
+    "notes": "Wan 2.2 VAE。TI2V-5B モデル専用(14B エキスパートは Wan 2.1 VAE を使用)。"
   },
   "wan_2.1_vae.safetensors": {
     "source": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors",
@@ -224,6 +224,6 @@
     "size_bytes": 253815318,
     "license": "Apache-2.0",
     "folder": "vae",
-    "notes": "Wan 2.1 VAE — used by the Wan 2.2 I2V-A14B experts."
+    "notes": "Wan 2.1 VAE。Wan 2.2 I2V-A14B エキスパートが使用。"
   }
 }

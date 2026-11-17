@@ -8,10 +8,10 @@ const COLORS: Record<ShotStatus, string> = {
 };
 
 const LABELS: Record<ShotStatus, string> = {
-  draft: "Draft",
-  queued: "In the queue",
-  generated: "Stills ready",
-  approved: "Approved",
+  draft: "下書き",
+  queued: "待機中",
+  generated: "スチル生成済み",
+  approved: "承認済み",
 };
 
 export function StatusRing({ status }: { status: ShotStatus }) {

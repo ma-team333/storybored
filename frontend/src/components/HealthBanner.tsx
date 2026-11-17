@@ -20,10 +20,10 @@ export function HealthBanner() {
   let message: string | null = null;
   if (isError) {
     message =
-      "Can't reach the StoryBored server — start it, then this page will recover on its own.";
+      "StoryBored サーバーに接続できません。サーバーを起動すると、このページは自動的に復旧します。";
   } else if (data && !healthOk(data.comfy)) {
     message =
-      "The image engine is offline. You can still edit your board — generation will be available once it's back.";
+      "画像エンジンがオフラインです。ボードの編集は可能です。エンジンが復旧すると生成できるようになります。";
   }
   if (!message) return null;
 
@@ -37,13 +37,13 @@ export function HealthBanner() {
             to="/setup"
             className="shrink-0 text-sm font-medium text-amber-450 hover:text-amber-350"
           >
-            Run setup
+            セットアップを実行
           </Link>
           <Link
             to="/settings"
             className="shrink-0 text-sm font-medium text-amber-450 hover:text-amber-350"
           >
-            Check settings →
+            設定を確認 →
           </Link>
         </>
       )}

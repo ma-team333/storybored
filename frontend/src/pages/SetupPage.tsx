@@ -43,29 +43,29 @@ const STEPS: Record<Path, StepId[]> = {
 
 const TIER_COPY: Record<CapabilityTier, { label: string; blurb: string }> = {
   studio: {
-    label: "studio-class",
+    label: "スタジオ級",
     blurb:
-      "This card fits everything: the biggest stills engine, 14B video, and character training.",
+      "このカードならすべて収まります:最大級のスチルエンジン、14B 動画、キャラクター学習まで。",
   },
   "stills-hd": {
-    label: "stills-HD-class",
+    label: "スチル HD 級",
     blurb:
-      "Great for stills — the default engine fits comfortably — plus lightweight video. 14B video and character training want a 24 GB-class card.",
+      "スチルに最適で、デフォルトのエンジンが余裕で動き、軽量な動画も扱えます。14B 動画とキャラクター学習には 24 GB 級のカードが望ましいです。",
   },
   stills: {
-    label: "stills-class",
+    label: "スチル級",
     blurb:
-      "Good for fast photoreal stills and lightweight video clips. The heavier engines want 16–24 GB.",
+      "高速なフォトリアル系スチルと軽量な動画クリップに向いています。重いエンジンには 16〜24 GB が必要です。",
   },
   "stills-lite": {
-    label: "stills-lite-class",
+    label: "スチルライト級",
     blurb:
-      "Fits a fast, compact stills engine (with some offloading at the low end). Video rendering and training want bigger cards.",
+      "高速・コンパクトなスチルエンジンが動きます(下位帯では一部オフロードあり)。動画レンダリングと学習には大きなカードが必要です。",
   },
   board: {
-    label: "boards only",
+    label: "ボードのみ",
     blurb:
-      "The engine didn't report a GPU with enough memory for the shipped engines. Boards, script tools and animatic export still work — rendering likely won't.",
+      "同梱エンジンを動かせるだけのメモリを持つ GPU が報告されませんでした。ボード・脚本ツール・アニマティックの書き出しは使えますが、レンダリングはおそらく無理です。",
   },
 };
 
@@ -94,18 +94,19 @@ function StatusLine({
       </p>
     );
   const copy: Record<string, string> = {
-    unreachable: "Nothing answered at that address. Is it running? Right port?",
+    unreachable:
+      "そのアドレスでは何も応答しませんでした。起動していますか?ポートは正しいですか?",
     unrecognized:
-      "Something answered, but it doesn't look like the right service — double-check the address and port.",
+      "何かが応答しましたが、別のサービスのようです。アドレスとポートを確認してください。",
     unauthorized:
-      "It wants an API key. Enter one below — it's used for tests once saved, so hosted services may show this until you finish setup.",
-    error: "It answered with a server error — check its logs.",
-    not_configured: "No address given.",
-    missing: "That folder doesn't exist on this machine.",
+      "API キーが求められています。下で入力してください — 保存後にテストに使われるため、ホスト型サービスでは設定完了までこの表示が出ることがあります。",
+    error: "サーバーエラーが返されました。サーバーのログを確認してください。",
+    not_configured: "アドレスが未入力です。",
+    missing: "そのフォルダはこのマシンに存在しません。",
   };
   return (
     <p className="text-sm text-status-failed">
-      {copy[status] ?? `Status: ${status}`}
+      {copy[status] ?? `ステータス: ${status}`}
     </p>
   );
 }
@@ -136,12 +137,12 @@ function OllamaGuide({
         className="flex w-full items-center gap-1.5 px-4 py-2.5 text-left text-xs font-medium text-paper hover:text-amber-350"
       >
         {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-        I don't have an LLM yet — set one up
+        LLM をまだお持ちでない場合 — セットアップする
       </button>
       {open && (
         <div className="space-y-3 border-t border-line/60 px-4 py-3 text-xs leading-relaxed text-mist">
           <p className="text-fog">
-            The easiest path is{" "}
+            最も簡単なのは{" "}
             <a
               href="https://ollama.com/download"
               target="_blank"
@@ -149,15 +150,14 @@ function OllamaGuide({
               className="inline-flex items-center gap-0.5 text-amber-450 hover:text-amber-350"
             >
               Ollama <ExternalLink size={11} />
-            </a>
-            , a free local LLM runner. Install it, pull the model, done:
+            </a>{" "}
+            という無料のローカル LLM ランナーです。インストールしてモデルを pull すれば完成です:
           </p>
           <div className="space-y-1.5">
             <p className="font-medium text-paper">Linux</p>
             <CodeLine>curl -fsSL https://ollama.com/install.sh | sh</CodeLine>
             <p className="font-medium text-paper">macOS / Windows</p>
             <p className="text-fog">
-              Download and run the installer from{" "}
               <a
                 href="https://ollama.com/download"
                 target="_blank"
@@ -165,34 +165,34 @@ function OllamaGuide({
                 className="text-amber-450 hover:text-amber-350"
               >
                 ollama.com/download
-              </a>
-              .
+              </a>{" "}
+              からインストーラをダウンロードして実行してください。
             </p>
-            <p className="font-medium text-paper">Then, on any platform</p>
+            <p className="font-medium text-paper">その後、どの OS でも</p>
             <CodeLine>{`ollama pull ${suggested}`}</CodeLine>
           </div>
           <p className="text-fog">
-            That's the model suggested for your hardware. Ollama then answers
-            at <code>http://127.0.0.1:11434/v1</code> —{" "}
+            これはお使いのハードウェアに合わせた推奨モデルです。Ollama は{" "}
+            <code>http://127.0.0.1:11434/v1</code>{" "}
+            で応答します —{" "}
             <button
               onClick={onUseDefaults}
               className="font-medium text-amber-450 hover:text-amber-350"
             >
-              fill those values in below
+              下にその値を入力
             </button>{" "}
-            and hit Test.
+            してテストを押してください。
           </p>
           <p className="text-fog">
-            Honest resource note: qwen3.5:9b (the default) is a 6.6 GB
-            download and needs roughly that much free RAM or VRAM; qwen3.5:4b
-            (3.4 GB) suits small GPUs and CPU-only boxes, and qwen3.5:35b-a3b
-            (24 GB) wants 32 GB+ of VRAM. CPU works everywhere, just slower.
-            Ollama unloads idle models after a few minutes, so it can share a
-            GPU with the render engine — and setting{" "}
-            <code>llm_keep_alive</code> to <code>0</code> in Settings frees
-            the VRAM immediately after each call on a shared-GPU box. If
-            you'd rather not run one at all, any OpenAI-compatible hosted API
-            works instead: paste its base URL, model name, and API key.
+            リソースについての正直なメモ:デフォルトの qwen3.5:9b は 6.6 GB
+            のダウンロードで、同程度の空き RAM または VRAM が必要です。qwen3.5:4b(3.4
+            GB)は小型 GPU や CPU のみのマシンに向き、qwen3.5:35b-a3b(24 GB)には
+            32 GB 以上の VRAM が必要です。CPU でもどこでも動きますが、遅くなります。
+            Ollama はアイドル状態のモデルを数分で解放するため、レンダリングエンジンと
+            GPU を共有できます。共有 GPU 環境では設定の <code>llm_keep_alive</code>{" "}
+            を <code>0</code> にすると、呼び出しごとに即座に VRAM を解放します。
+            ローカルで動かしたくない場合は、OpenAI 互換のホスト型 API
+            でも構いません:ベース URL・モデル名・API キーを入力してください。
           </p>
         </div>
       )}
@@ -220,17 +220,17 @@ function RecommendedRow({
         </span>
         <Badge tone="fog">{rec.kind}</Badge>
         {rec.available ? (
-          <Badge tone="green">installed</Badge>
+          <Badge tone="green">インストール済み</Badge>
         ) : (
           <>
             {rec.download_bytes > 0 && (
               <span className="shrink-0 text-xs text-fog">
-                {formatBytes(rec.download_bytes)} to download
+                {formatBytes(rec.download_bytes)} をダウンロード
               </span>
             )}
             {rec.downloadable && modelsDirSet && (
               <Button size="sm" busy={busy} onClick={() => onDownload(rec.id)}>
-                <Download size={13} /> Download missing
+                <Download size={13} /> 不足分をダウンロード
               </Button>
             )}
           </>
@@ -334,7 +334,7 @@ export function SetupPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries();
-      toast("You're set up — make something.", "success");
+      toast("セットアップ完了です。何か作ってみましょう。", "success");
       navigate("/");
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -353,11 +353,11 @@ export function SetupPage() {
     onSuccess: (data) => {
       if (data.queued > 0) {
         toast(
-          `Downloading ${data.queued} model file${data.queued === 1 ? "" : "s"} — watch the job tray, then hit Test again.`,
+          `${data.queued} 件のモデルファイルをダウンロードしています — ジョブトレイを確認してから、もう一度テストを押してください。`,
           "success",
         );
       } else {
-        toast("Nothing to download — already fetching or nothing missing.", "success");
+        toast("ダウンロードするものはありません — 取得中か、不足ファイルがありません。", "success");
       }
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -379,13 +379,13 @@ export function SetupPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-7">
-        <h1 className="text-xl font-semibold tracking-tight">Set up StoryBored</h1>
+        <h1 className="text-xl font-semibold tracking-tight">StoryBored をセットアップ</h1>
         <p className="mt-1 text-sm text-fog">
-          A couple of minutes, all optional, all changeable later in{" "}
+          数分で完了します。すべて任意で、後から
           <Link to="/settings" className="text-amber-450 hover:text-amber-350">
-            Settings
+            設定
           </Link>
-          .
+          でいつでも変更できます。
         </p>
       </div>
 
@@ -408,10 +408,10 @@ export function SetupPage() {
       {/* ------------------------------------------------ step: welcome */}
       {step === "welcome" && (
         <StepCard>
-          <h2 className="text-sm font-semibold">Where will your images come from?</h2>
+          <h2 className="text-sm font-semibold">画像はどこから調達しますか?</h2>
           <p className="mt-1 text-xs text-fog">
-            StoryBored renders through an engine (ComfyUI) that can live on this
-            machine or any machine you can reach.
+            StoryBored はエンジン(ComfyUI)経由でレンダリングします。このマシンでも、
+            到達できる別のマシンでも構いません。
           </p>
           <div className="mt-4 space-y-2">
             {(
@@ -419,21 +419,21 @@ export function SetupPage() {
                 {
                   id: "have" as Path,
                   icon: <Server size={16} />,
-                  title: "I have an engine running",
-                  blurb: "Point StoryBored at it and check what your GPU can do.",
+                  title: "エンジンをすでに動かしている",
+                  blurb: "StoryBored から接続して、GPU の性能を確認します。",
                 },
                 {
                   id: "need" as Path,
                   icon: <MonitorPlay size={16} />,
-                  title: "I need to install one",
-                  blurb: "Quick pointers for installing ComfyUI, then connect it.",
+                  title: "これからインストールする",
+                  blurb: "ComfyUI のインストール手順を案内してから接続します。",
                 },
                 {
                   id: "none" as Path,
                   icon: <LayoutIcon size={16} />,
-                  title: "No GPU — boards only",
+                  title: "GPU なし — ボードのみ",
                   blurb:
-                    "Plan and structure your film without rendering. Connect an engine any time later.",
+                    "レンダリングなしで企画と構成を進めます。エンジンは後からいつでも接続できます。",
                 },
               ] as const
             ).map((opt) => (
@@ -462,13 +462,13 @@ export function SetupPage() {
       {step === "engine" && (
         <StepCard>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <Cpu size={15} className="text-amber-450" /> Connect your engine
+            <Cpu size={15} className="text-amber-450" /> エンジンを接続
           </h2>
           {path === "need" && (
             <div className="mt-3 rounded-lg border border-line/60 bg-ink-900 p-4 text-xs leading-relaxed text-mist">
-              <p className="font-medium text-paper">Installing ComfyUI</p>
+              <p className="font-medium text-paper">ComfyUI のインストール</p>
               <p className="mt-1 text-fog">
-                Grab the desktop app or follow the manual install at{" "}
+                デスクトップアプリを入手するか、{" "}
                 <a
                   href="https://docs.comfy.org"
                   target="_blank"
@@ -476,17 +476,17 @@ export function SetupPage() {
                   className="inline-flex items-center gap-0.5 text-amber-450 hover:text-amber-350"
                 >
                   docs.comfy.org <ExternalLink size={11} />
-                </a>
-                . It can run on this machine or any machine on your network with
-                the GPU. Once it's up, its address appears in its startup log
-                (usually port 8188). StoryBored's engines also need model files —{" "}
-                <code>docs/MODELS.md</code> in your StoryBored folder lists what
-                to download and where.
+                </a>{" "}
+                の手動インストール手順に従ってください。このマシンでも、ネットワーク上の
+                GPU 搭載マシンでも動かせます。起動すると、アドレスがスタートアップログに
+                表示されます(通常はポート 8188)。StoryBored のエンジンにはモデルファイルも
+                必要です — StoryBored フォルダ内の <code>docs/MODELS.md</code>{" "}
+                に、何をどこに置くかが書かれています。
               </p>
             </div>
           )}
           <div className="mt-4 space-y-3.5">
-            <Field label="Engine address" hint="The ComfyUI URL, e.g. http://127.0.0.1:8188 — another machine works too.">
+            <Field label="エンジンのアドレス" hint="ComfyUI の URL です。例: http://127.0.0.1:8188 — 別のマシンでも構いません。">
               <Input
                 value={comfyUrl}
                 onChange={(e) => {
@@ -498,10 +498,10 @@ export function SetupPage() {
             </Field>
             <div className="flex items-center gap-3">
               <Button onClick={() => testEngine.mutate()} busy={testEngine.isPending}>
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
               {testEngine.isPending && (
-                <span className="text-xs text-fog">Knocking on the engine's door…</span>
+                <span className="text-xs text-fog">エンジンに接続を試みています…</span>
               )}
             </div>
 
@@ -509,7 +509,7 @@ export function SetupPage() {
               <div className="space-y-3 rounded-lg border border-line/60 bg-ink-900 p-4">
                 <StatusLine
                   status={engineProbe.comfy.status}
-                  okText="Engine found."
+                  okText="エンジンが見つかりました。"
                 />
                 {engineOk && (
                   <>
@@ -531,7 +531,7 @@ export function SetupPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-fog">No GPU reported.</p>
+                      <p className="text-xs text-fog">GPU が報告されていません。</p>
                     )}
                     <p className="flex items-start gap-2 text-xs text-mist">
                       <Badge tone={tier === "board" ? "amber" : "green"}>
@@ -542,7 +542,7 @@ export function SetupPage() {
                     {recommendedPacks.length > 0 && (
                       <div>
                         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-fog">
-                          Recommended for your GPU
+                          この GPU におすすめ
                         </p>
                         <div className="space-y-1.5">
                           {recommendedPacks.map((rec) => (
@@ -560,27 +560,27 @@ export function SetupPage() {
                         ) &&
                           !modelsDirSet && (
                             <p className="mt-1.5 text-[11px] text-fog">
-                              These files can be fetched for you in one click —
-                              set the engine models folder in{" "}
+                              これらのファイルはワンクリックで取得できます —
+                              まず
                               <Link
                                 to="/settings"
                                 className="text-amber-450 hover:text-amber-350"
                               >
-                                Settings
+                                設定
                               </Link>{" "}
-                              first (works when StoryBored runs on the same
-                              computer as the engine).
+                              でエンジンのモデルフォルダを指定してください(StoryBored
+                              がエンジンと同じマシンで動いている場合に機能します)。
                             </p>
                           )}
                         <p className="mt-1.5 text-[11px] text-fog">
-                          Finishing setup makes these your default engines —
-                          you can pick different ones in Settings any time.
+                          セットアップを完了すると、これらがデフォルトのエンジンになります —
+                          設定でいつでも別のものを選べます。
                         </p>
                       </div>
                     )}
                     <div>
                       <p className="mb-1 text-xs font-medium uppercase tracking-wider text-fog">
-                        Engines on this system
+                        このシステムのエンジン
                       </p>
                       <ul className="space-y-1">
                         {engineProbe.workflows.map((w) => (
@@ -591,11 +591,10 @@ export function SetupPage() {
                               </span>
                               <Badge tone="fog">{w.kind}</Badge>
                               {w.available ? (
-                                <Badge tone="green">ready</Badge>
+                                <Badge tone="green">準備完了</Badge>
                               ) : (
                                 <Badge tone="red">
-                                  {w.missing_models.length || "?"} missing file
-                                  {w.missing_models.length === 1 ? "" : "s"}
+                                  不足ファイル {w.missing_models.length || "?"} 件
                                 </Badge>
                               )}
                             </div>
@@ -609,15 +608,15 @@ export function SetupPage() {
                       </ul>
                       {engineProbe.workflows.some((w) => !w.available) && (
                         <p className="mt-1.5 text-xs text-fog">
-                          Missing files are listed per engine in{" "}
+                          不足ファイルは
                           <Link
                             to="/settings"
                             className="text-amber-450 hover:text-amber-350"
                           >
-                            Settings
+                            設定
                           </Link>{" "}
-                          — <code>docs/MODELS.md</code> explains where each one
-                          comes from.
+                          でエンジンごとに確認できます —{" "}
+                          <code>docs/MODELS.md</code> に各ファイルの入手先が書かれています。
                         </p>
                       )}
                     </div>
@@ -628,16 +627,16 @@ export function SetupPage() {
 
             <div className="flex justify-between pt-1">
               <Button variant="ghost" onClick={back}>
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={14} /> 戻る
               </Button>
               <div className="flex gap-2">
                 {!engineOk && (
                   <Button variant="ghost" onClick={next}>
-                    Skip for now
+                    今はスキップ
                   </Button>
                 )}
                 <Button variant="primary" onClick={next} disabled={!engineOk}>
-                  Continue <ArrowRight size={14} />
+                  続ける <ArrowRight size={14} />
                 </Button>
               </div>
             </div>
@@ -649,16 +648,16 @@ export function SetupPage() {
       {step === "assistant" && (
         <StepCard>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <PenLine size={15} className="text-amber-450" /> Writing assistant
-            <Badge tone="fog">optional</Badge>
+            <PenLine size={15} className="text-amber-450" /> 執筆アシスタント
+            <Badge tone="fog">任意</Badge>
           </h2>
           <p className="mt-1 text-xs leading-relaxed text-fog">
-            Worth setting up: it powers script breakdown, story-vibes boards,
-            the <em>Enhance</em> button that polishes rough shot notes, and
-            motion drafts for video. Skip it and you simply write those
-            yourself. Any OpenAI-compatible service works — a local Ollama at{" "}
-            <code>http://127.0.0.1:11434/v1</code> is the easiest path, and it
-            runs fine without a big GPU.
+            設定する価値があります:脚本分解、ストーリーモードのボード、雑なショットメモを
+            磨く <em>強化(Enhance)</em> ボタン、動画のモーション下書きを担っています。
+            スキップしても、それらを自分で書くだけです。OpenAI
+            互換のサービスなら何でも動きます —{" "}
+            <code>http://127.0.0.1:11434/v1</code>{" "}
+            のローカル Ollama が最も簡単で、大きな GPU がなくても動きます。
           </p>
           <div className="mt-4 space-y-3.5">
             <OllamaGuide
@@ -669,7 +668,7 @@ export function SetupPage() {
                 setLlmProbe(null);
               }}
             />
-            <Field label="Service URL">
+            <Field label="サービス URL">
               <Input
                 value={llmUrl}
                 onChange={(e) => {
@@ -685,7 +684,7 @@ export function SetupPage() {
                 busy={testLlm.isPending}
                 disabled={!llmUrl.trim()}
               >
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
             </div>
             {llmProbe && !testLlm.isPending && (
@@ -694,23 +693,22 @@ export function SetupPage() {
                   status={llmProbe.llm.status}
                   okText={
                     llmModels.length
-                      ? `Found it — ${llmModels.length} model${llmModels.length === 1 ? "" : "s"} available.`
-                      : "Found it."
+                      ? `見つかりました — ${llmModels.length} 件のモデルが利用可能です。`
+                      : "見つかりました。"
                   }
                 />
                 {!llmOk && (
                   <p className="text-xs text-fog">
-                    Key-protected hosted services may refuse this test — you can
-                    still save the address and key, and the first breakdown will
-                    tell you if something's off.
+                    キーで保護されたホスト型サービスではこのテストが拒否されることがあります
+                    — アドレスとキーは保存できるので、最初の脚本分解で問題があればわかります。
                   </p>
                 )}
               </div>
             )}
             {llmOk && llmModels.length > 0 ? (
-              <Field label="Model">
+              <Field label="モデル">
                 <Select value={llmModel} onChange={(e) => setLlmModel(e.target.value)}>
-                  <option value="">Choose a model…</option>
+                  <option value="">モデルを選択…</option>
                   {llmModels.map((m) => (
                     <option key={m} value={m}>
                       {m}
@@ -720,14 +718,14 @@ export function SetupPage() {
               </Field>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Model">
+                <Field label="モデル">
                   <Input
                     value={llmModel}
                     onChange={(e) => setLlmModel(e.target.value)}
-                    placeholder="model name"
+                    placeholder="モデル名"
                   />
                 </Field>
-                <Field label="API key" hint="Leave blank for local services.">
+                <Field label="API キー" hint="ローカルのサービスでは空欄にしてください。">
                   <Input
                     type="password"
                     value={llmKey}
@@ -739,18 +737,18 @@ export function SetupPage() {
             )}
             <div className="flex justify-between pt-1">
               <Button variant="ghost" onClick={back}>
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={14} /> 戻る
               </Button>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={next}>
-                  Skip — I'll write everything myself
+                  スキップ — すべて自分で書く
                 </Button>
                 <Button
                   variant="primary"
                   onClick={next}
                   disabled={!llmUrl.trim() || !llmModel.trim()}
                 >
-                  Continue <ArrowRight size={14} />
+                  続ける <ArrowRight size={14} />
                 </Button>
               </div>
             </div>
@@ -762,24 +760,25 @@ export function SetupPage() {
       {step === "trainer" && (
         <StepCard>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <UserRound size={15} className="text-amber-450" /> Character trainer
-            <Badge tone="fog">optional</Badge>
+            <UserRound size={15} className="text-amber-450" /> キャラクター トレーナー
+            <Badge tone="fog">任意</Badge>
           </h2>
           <p className="mt-1 text-xs leading-relaxed text-fog">
-            Lets you train a recurring character from 20–40 photos and use them
-            as <code>@handles</code> in any shot. It drives an external trainer
-            checkout on this machine — <code>docs/TRAINING.md</code> in your
-            StoryBored folder explains the setup. Skip it and you can still
-            import ready-made character files any time.
+            20〜40 枚の写真から繰り返し使うキャラクターを学習させ、どのショットでも{" "}
+            <code>@handle</code>{" "}
+            として呼び出せるようにします。このマシン上の外部トレーナーのチェックアウトを
+            実行します — StoryBored フォルダ内の <code>docs/TRAINING.md</code>{" "}
+            にセットアップ方法が書かれています。スキップしても、完成済みのキャラクター
+            ファイルはいつでも読み込めます。
           </p>
           {engineProbe?.training?.note && (
             <p className="mt-3 rounded-md border border-line/60 bg-ink-900 px-3 py-2 text-xs leading-relaxed text-mist">
-              <span className="font-medium text-paper">Your GPU: </span>
+              <span className="font-medium text-paper">あなたの GPU: </span>
               {engineProbe.training.note}
             </p>
           )}
           <div className="mt-4 space-y-3.5">
-            <Field label="Trainer folder" hint="Path to a lora-factory-style checkout on this machine.">
+            <Field label="トレーナーのフォルダ" hint="このマシン上の lora-factory 系チェックアウトのパスです。">
               <Input
                 value={trainerDir}
                 onChange={(e) => {
@@ -795,25 +794,25 @@ export function SetupPage() {
                 busy={testTrainer.isPending}
                 disabled={!trainerDir.trim()}
               >
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
               {trainerProbe && !testTrainer.isPending && (
                 <StatusLine
                   status={trainerProbe.trainer.status}
-                  okText="Folder found."
+                  okText="フォルダが見つかりました。"
                 />
               )}
             </div>
             <div className="flex justify-between pt-1">
               <Button variant="ghost" onClick={back}>
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={14} /> 戻る
               </Button>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={next}>
-                  Skip
+                  スキップ
                 </Button>
                 <Button variant="primary" onClick={next} disabled={!trainerOk}>
-                  Continue <ArrowRight size={14} />
+                  続ける <ArrowRight size={14} />
                 </Button>
               </div>
             </div>
@@ -825,43 +824,43 @@ export function SetupPage() {
       {step === "summary" && (
         <StepCard>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles size={15} className="text-amber-450" /> Ready
+            <Sparkles size={15} className="text-amber-450" /> 準備完了
           </h2>
           <ul className="mt-4 space-y-2">
             <li className="flex items-center gap-3 rounded-md border border-line/60 bg-ink-900 px-3 py-2 text-sm">
-              <span className="w-28 shrink-0 text-xs text-fog">Engine</span>
+              <span className="w-28 shrink-0 text-xs text-fog">エンジン</span>
               {path === "none" ? (
                 <span className="text-fog">
-                  none — boards only for now, connect one any time in Settings
+                  なし — まずはボードのみ。設定でいつでも接続できます
                 </span>
               ) : engineOk ? (
                 <span className="min-w-0 flex-1 truncate text-paper">
                   {comfyUrl} <Badge tone="green">{TIER_COPY[tier].label}</Badge>
                 </span>
               ) : (
-                <span className="text-fog">skipped — set it later in Settings</span>
+                <span className="text-fog">スキップ — 後から設定で指定できます</span>
               )}
             </li>
             <li className="flex items-center gap-3 rounded-md border border-line/60 bg-ink-900 px-3 py-2 text-sm">
-              <span className="w-28 shrink-0 text-xs text-fog">Assistant</span>
+              <span className="w-28 shrink-0 text-xs text-fog">アシスタント</span>
               {llmUrl.trim() && llmModel.trim() ? (
                 <span className="min-w-0 flex-1 truncate text-paper">
-                  {llmModel} <span className="text-fog">at {llmUrl}</span>
+                  {llmModel} <span className="text-fog">({llmUrl})</span>
                 </span>
               ) : (
                 <span className="text-fog">
-                  skipped — script breakdown, Enhance and motion drafts stay off
+                  スキップ — 脚本分解・強化・モーション下書きはオフのままです
                 </span>
               )}
             </li>
             {path !== "none" && (
               <li className="flex items-center gap-3 rounded-md border border-line/60 bg-ink-900 px-3 py-2 text-sm">
-                <span className="w-28 shrink-0 text-xs text-fog">Trainer</span>
+                <span className="w-28 shrink-0 text-xs text-fog">トレーナー</span>
                 {trainerDir.trim() && trainerOk ? (
                   <span className="min-w-0 flex-1 truncate text-paper">{trainerDir}</span>
                 ) : (
                   <span className="text-fog">
-                    skipped — you can still import existing characters
+                    スキップ — 既存のキャラクターは読み込めます
                   </span>
                 )}
               </li>
@@ -869,23 +868,23 @@ export function SetupPage() {
           </ul>
           {path === "none" && (
             <p className="mt-3 text-xs leading-relaxed text-fog">
-              What works without an engine: the full board (scenes, shots,
-              descriptions, ordering), script breakdown{llmUrl ? "" : " (once an assistant is set up)"},
-              and the animatic exporter. Note the animatic can only include shots
-              that already have stills or clips — so until an engine is
-              connected, it's a planning tool, not a screening tool.
+              エンジンなしで使える機能:ボード一式(シーン、ショット、説明文、並べ替え)、
+              脚本分解{llmUrl ? "" : "(アシスタント設定後)"}
+              、アニマティックの書き出し。なおアニマティックには、すでにスチルやクリップがある
+              ショットしか含められません — エンジンを接続するまでは、上映用ではなく企画用の
+              ツールということになります。
             </p>
           )}
           <div className="mt-5 flex justify-between">
             <Button variant="ghost" onClick={back}>
-              <ArrowLeft size={14} /> Back
+              <ArrowLeft size={14} /> 戻る
             </Button>
             <Button
               variant="primary"
               onClick={() => finish.mutate()}
               busy={finish.isPending}
             >
-              <Check size={14} /> Finish setup
+              <Check size={14} /> セットアップを完了
             </Button>
           </div>
         </StepCard>

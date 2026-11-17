@@ -55,13 +55,13 @@ export function Layout() {
           </NavLink>
           <nav className="ml-auto flex items-center gap-1">
             <NavLink to="/" end className={navCls}>
-              <Clapperboard size={14} /> Projects
+              <Clapperboard size={14} /> プロジェクト
             </NavLink>
             <NavLink to="/characters" className={navCls}>
-              <Users size={14} /> Characters
+              <Users size={14} /> キャラクター
             </NavLink>
             <NavLink to="/settings" className={navCls}>
-              <Settings size={14} /> Settings
+              <Settings size={14} /> 設定
             </NavLink>
           </nav>
         </div>

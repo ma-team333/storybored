@@ -84,7 +84,7 @@ function ShotCardInner({
           {shotLabel(sceneIndex, shotIndex)}
         </span>
         <span className="min-w-0 flex-1 truncate text-[11px] text-fog">
-          {shot.description || "Untitled shot"}
+          {shot.description || "無題のショット"}
         </span>
         <span className="flex shrink-0 items-center gap-0.5 text-[10px] text-fog">
           <Clock size={9} />
@@ -157,7 +157,7 @@ function SceneStrip({
           className="cursor-grab touch-none rounded p-1 text-fog/60 hover:text-fog active:cursor-grabbing"
           {...attributes}
           {...listeners}
-          aria-label="Drag to reorder scene"
+          aria-label="ドラッグで並べ替え"
         >
           <GripVertical size={15} />
         </button>
@@ -168,23 +168,23 @@ function SceneStrip({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => title !== scene.title && onRename({ title })}
-          placeholder="Scene title"
+          placeholder="シーンタイトル"
           className="min-w-0 flex-shrink bg-transparent text-sm font-semibold text-paper placeholder:text-fog/50 focus:outline-none"
         />
         <input
           value={slugline}
           onChange={(e) => setSlugline(e.target.value)}
           onBlur={() => slugline !== scene.slugline && onRename({ slugline })}
-          placeholder="INT. LOCATION — DAY"
+          placeholder="INT. 場所 — 昼"
           className="min-w-0 flex-1 bg-transparent text-xs uppercase tracking-wide text-fog placeholder:text-fog/40 focus:outline-none"
         />
         <span className="text-[11px] text-fog/70">
-          {shots.length} shot{shots.length === 1 ? "" : "s"}
+          {shots.length} ショット
         </span>
         <button
           onClick={onDelete}
           className="rounded p-1 text-transparent transition-colors hover:!text-status-failed group-hover:text-fog/60"
-          title="Delete scene"
+          title="シーンを削除"
         >
           <Trash2 size={14} />
         </button>
@@ -194,9 +194,9 @@ function SceneStrip({
           value={look}
           onChange={(e) => setLook(e.target.value)}
           onBlur={() => look !== (scene.look ?? "") && onRename({ look })}
-          placeholder="Scene look — place, light, weather, palette (pinned into renders when Continuity is on)"
+          placeholder="シーンのルック — 場所、光、天候、パレット（コンティニュイティ有効時、レンダリングに反映されます）"
           className="w-full bg-transparent text-xs text-fog placeholder:text-fog/40 focus:outline-none"
-          title="The scene's visual environment. With Continuity on, this is appended to every image render in the scene and steers Enhance."
+          title="シーンの視覚的環境。コンティニュイティ有効時はシーン内のすべての画像レンダリングに追加され、Enhance の方向性にも使われます。"
         />
       </div>
       <div className="flex items-stretch gap-3 overflow-x-auto p-3">
@@ -221,7 +221,7 @@ function SceneStrip({
           style={{ minHeight: 124 }}
         >
           <Plus size={16} />
-          <span className="text-[11px] font-medium">shot</span>
+          <span className="text-[11px] font-medium">ショット</span>
         </button>
       </div>
     </section>
@@ -266,7 +266,7 @@ export function BoardPage() {
 
   const addScene = useMutation({
     mutationFn: () =>
-      apiPost(`/api/projects/${projectId}/scenes`, { title: `Scene ${scenes.length + 1}` }),
+      apiPost(`/api/projects/${projectId}/scenes`, { title: `シーン ${scenes.length + 1}` }),
     onSuccess: invalidate,
     onError,
   });
@@ -296,7 +296,7 @@ export function BoardPage() {
   });
   const renderVideos = useMutation({
     mutationFn: () => apiPost(`/api/projects/${projectId}/render-videos`, {}),
-    onSuccess: () => toast("Queued video renders for approved shots.", "success"),
+    onSuccess: () => toast("承認済みショットの動画レンダリングをキューに追加しました。", "success"),
     onError,
   });
 
@@ -409,7 +409,7 @@ export function BoardPage() {
         }
       }
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Couldn't save the new order.", "error");
+      toast(err instanceof Error ? err.message : "新しい並び順を保存できませんでした。", "error");
     } finally {
       draggingRef.current = false;
       invalidate();
@@ -435,20 +435,20 @@ export function BoardPage() {
       </div>
     );
   if (isError || !data)
-    return <ErrorState body="This board couldn't be loaded." onRetry={() => refetch()} />;
+    return <ErrorState body="このボードを読み込めませんでした。" onRetry={() => refetch()} />;
 
   return (
     <div>
       <HealthBanner />
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <Link to="/" className="rounded-md p-1.5 text-fog hover:text-paper" title="All projects">
+        <Link to="/" className="rounded-md p-1.5 text-fog hover:text-paper" title="プロジェクト一覧">
           <ArrowLeft size={17} />
         </Link>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold tracking-tight">{data.title}</h1>
           <p className="text-xs text-fog">
-            {scenes.length} scene{scenes.length === 1 ? "" : "s"} ·{" "}
-            {scenes.reduce((n, s) => n + (s.shots?.length ?? 0), 0)} shots · {data.aspect_ratio}
+            {scenes.length} シーン ·{" "}
+            {scenes.reduce((n, s) => n + (s.shots?.length ?? 0), 0)} ショット · {data.aspect_ratio}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -457,24 +457,24 @@ export function BoardPage() {
             busy={toggleContinuity.isPending}
             title={
               data.continuity_enabled
-                ? "Continuity is on: each scene's look is appended to every image render in that scene, and Enhance keeps wardrobe, props, and light consistent across the scene's shots. Click to turn off."
-                : "Continuity is off: renders use shot prompts alone. Click to pin each scene's look into its renders and keep shots consistent."
+                ? "コンティニュイティがオン:各シーンのルックがシーン内のすべての画像レンダリングに追加され、Enhance も衣装・小道具・光をシーン全体で一貫させます。クリックでオフにします。"
+                : "コンティニュイティがオフ:レンダリングはショットのプロンプトのみを使用します。クリックすると各シーンのルックをレンダリングに反映し、ショットの一貫性を保ちます。"
             }
           >
             <Link2 size={14} className={data.continuity_enabled ? "text-amber-450" : ""} />{" "}
-            Continuity {data.continuity_enabled ? "on" : "off"}
+            コンティニュイティ {data.continuity_enabled ? "オン" : "オフ"}
           </Button>
           <Button onClick={() => renderVideos.mutate()} busy={renderVideos.isPending}>
-            <Film size={14} /> Render videos
+            <Film size={14} /> 動画レンダリング
           </Button>
           <Link to={`/p/${projectId}/script`}>
             <Button>
-              <FileText size={14} /> Import script
+              <FileText size={14} /> 脚本を読み込み
             </Button>
           </Link>
           <Link to={`/p/${projectId}/export`}>
             <Button variant="primary">
-              <Clapperboard size={14} /> Export
+              <Clapperboard size={14} /> 書き出し
             </Button>
           </Link>
         </div>
@@ -483,16 +483,16 @@ export function BoardPage() {
       {scenes.length === 0 ? (
         <EmptyState
           icon={Clapperboard}
-          title="An empty board, full of possibility"
-          body="Add your first scene, or paste a script and let StoryBored draft the shot list for you."
+          title="まだ何もない、無限の可能性があるボード"
+          body="最初のシーンを追加するか、脚本を貼り付けて StoryBored にショットリストを下書きさせましょう。"
           action={
             <div className="flex gap-2">
               <Button variant="primary" onClick={() => addScene.mutate()} busy={addScene.isPending}>
-                <Plus size={15} /> Add a scene
+                <Plus size={15} /> シーンを追加
               </Button>
               <Link to={`/p/${projectId}/script`}>
                 <Button>
-                  <FileText size={14} /> Import script
+                  <FileText size={14} /> 脚本を読み込み
                 </Button>
               </Link>
             </div>
@@ -528,7 +528,7 @@ export function BoardPage() {
                   onDelete={() => {
                     if (
                       window.confirm(
-                        `Delete scene ${i + 1}${scene.title ? ` "${scene.title}"` : ""} and its shots?`,
+                        `シーン ${i + 1}${scene.title ? `「${scene.title}」` : ""} とそのショットを削除しますか?`,
                       )
                     )
                       deleteScene.mutate(scene.id);
@@ -553,7 +553,7 @@ export function BoardPage() {
       {scenes.length > 0 && (
         <div className="mt-5">
           <Button onClick={() => addScene.mutate()} busy={addScene.isPending}>
-            <Plus size={15} /> Add scene
+            <Plus size={15} /> シーンを追加
           </Button>
         </div>
       )}

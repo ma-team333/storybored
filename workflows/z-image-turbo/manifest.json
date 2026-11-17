@@ -4,18 +4,18 @@
   "kind": "image",
   "offload_friendly": true,
   "lora_family": "z-image",
-  "description": "Z-Image Turbo (Alibaba Tongyi, 6B, Apache 2.0): photoreal stills in 8 steps from a 6.2 GB int8 build — the recommended engine for 6–12 GB cards, and the fastest stills engine at any size. Keep cfg at 1.0; the model is sampler-sensitive.",
+  "description": "Z-Image Turbo (Alibaba Tongyi, 6B, Apache 2.0):6.2 GB の int8 ビルドで 8 ステップの写実的スチル生成。6〜12 GB クラスの GPU に推奨のエンジンで、どの VRAM でも最速のスチル生成。cfg は 1.0 のままにすること。サンプラーに敏感なモデル。",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "seed", "label": "Seed", "type": "seed", "node": "3", "input": "seed"},
-    {"key": "width", "label": "Width", "type": "int", "node": "5", "input": "width", "default": 1024},
-    {"key": "height", "label": "Height", "type": "int", "node": "5", "input": "height", "default": 1024},
-    {"key": "steps", "label": "Steps", "type": "int", "node": "3", "input": "steps", "default": 8}
+    {"key": "prompt", "label": "プロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "seed", "label": "シード", "type": "seed", "node": "3", "input": "seed"},
+    {"key": "width", "label": "幅", "type": "int", "node": "5", "input": "width", "default": 1024},
+    {"key": "height", "label": "高さ", "type": "int", "node": "5", "input": "height", "default": 1024},
+    {"key": "steps", "label": "ステップ数", "type": "int", "node": "3", "input": "steps", "default": 8}
   ],
   "output_node": "9",
   "model_slots": [
-    {"key": "unet", "label": "Base model", "node": "4", "input": "unet_name"}
+    {"key": "unet", "label": "ベースモデル", "node": "4", "input": "unet_name"}
   ],
   "character_injection": {
     "after_node": "4",

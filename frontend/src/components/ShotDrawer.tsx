@@ -57,20 +57,20 @@ function familyConflict(pack: WorkflowManifest, cast: Character[]): boolean {
   return cast.some((c) => c.lora_family && c.lora_family !== pack.lora_family);
 }
 
-/** "~14s" / "~2m 30s" from seconds. */
+/** "約14秒" / "約2分30秒" from seconds. */
 function fmtDuration(s: number): string {
-  if (s < 90) return `~${Math.round(s)}s`;
+  if (s < 90) return `約${Math.round(s)}秒`;
   const m = Math.floor(s / 60);
   const rem = Math.round(s % 60);
-  return rem ? `~${m}m ${rem}s` : `~${m}m`;
+  return rem ? `約${m}分${rem}秒` : `約${m}分`;
 }
 
 /** Option-label suffix: measured speed when known, else the modeled fit flag.
  *  Measured beats modeled — a real median silences the model's worry. */
 function engineSpeedSuffix(w: WorkflowManifest): string {
   if (w.median_render_s != null) return ` (${fmtDuration(w.median_render_s)})`;
-  if (w.fit === "tight" || w.fit === "exceeds") return " (slow on this card)";
-  if (w.fit === "streams") return " (streams on this card)";
+  if (w.fit === "tight" || w.fit === "exceeds") return "（この GPU では低速）";
+  if (w.fit === "streams") return "（この GPU ではストリーミング動作）";
   return "";
 }
 
@@ -85,10 +85,10 @@ function EngineSpeedHint({
   if (workflow.median_render_s != null) {
     return (
       <p className="mt-1 text-[11px] text-fog">
-        {fmtDuration(workflow.median_render_s)} per {unit} on this machine
+        {unit === "frame" ? "1 枚" : "1 クリップ"}あたり {fmtDuration(workflow.median_render_s)}（このマシンで実測
         {workflow.timing_samples
-          ? ` · from ${workflow.timing_samples} render${workflow.timing_samples === 1 ? "" : "s"}`
-          : ""}
+          ? ` · ${workflow.timing_samples} 回のレンダリングから算出`
+          : ""}）
       </p>
     );
   }
@@ -99,14 +99,14 @@ function EngineSpeedHint({
           workflow.fit === "exceeds" ? "text-status-failed" : "text-amber-450"
         }`}
       >
-        {workflow.fit_detail || "May be slow on this card."} No renders here yet.
+        {workflow.fit_detail || "この GPU では低速になる可能性があります。"} まだこのマシンでのレンダリング実績はありません。
       </p>
     );
   }
   if (workflow.fit === "streams") {
     return (
       <p className="mt-1 text-[11px] leading-relaxed text-fog">
-        {workflow.fit_detail || "Streams layers on this card — works, just slower."}
+        {workflow.fit_detail || "この GPU ではレイヤーをストリーミング処理します。動作しますがやや遅くなります。"}
       </p>
     );
   }
@@ -185,11 +185,11 @@ function ParamFields({
           );
         }
         return (
-          <Field key={p.key} label={label} hint={p.type === "seed" ? "Blank = random" : undefined}>
+          <Field key={p.key} label={label} hint={p.type === "seed" ? "空欄でランダム" : undefined}>
             <Input
               type={p.type === "int" || p.type === "float" || p.type === "seed" ? "number" : "text"}
               value={val}
-              placeholder={p.type === "seed" ? "random" : undefined}
+              placeholder={p.type === "seed" ? "ランダム" : undefined}
               onChange={(e) => onChange(p.key, e.target.value)}
             />
           </Field>
@@ -256,7 +256,7 @@ function TakeTile({
           className="flex h-full w-full items-center justify-center bg-status-failed/10 px-2 text-center"
           title={take.error ?? undefined}
         >
-          <span className="text-[10px] text-status-failed">failed</span>
+          <span className="text-[10px] text-status-failed">失敗</span>
         </div>
       )}
       {take.status === "done" &&
@@ -275,9 +275,9 @@ function TakeTile({
       {isPlate && (
         <span
           className="absolute right-1 top-1 flex items-center gap-0.5 rounded bg-ink-950/80 px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-450"
-          title="This take is the scene's plate — shots with a plate hold anchor their renders to it"
+          title="このテイクはシーンのプレートです。プレートホールド設定のあるショットは、このフレームにレンダリングを固定します"
         >
-          <Pin size={9} /> plate
+          <Pin size={9} /> プレート
         </span>
       )}
       {take.status === "done" && (
@@ -289,7 +289,7 @@ function TakeTile({
                 onPick();
               }}
               className="rounded bg-ink-850/90 p-1 text-mist hover:text-amber-450"
-              title="Pick this take"
+              title="このテイクを選択"
             >
               <Star size={12} />
             </button>
@@ -301,7 +301,7 @@ function TakeTile({
                 onSetPlate();
               }}
               className="rounded bg-ink-850/90 p-1 text-mist hover:text-amber-450"
-              title="Use as scene plate — other shots in this scene can anchor their renders to this frame"
+              title="シーンのプレートに設定 — このシーンの他のショットがこのフレームにレンダリングを固定できます"
             >
               <Pin size={12} />
             </button>
@@ -312,7 +312,7 @@ function TakeTile({
               onDelete();
             }}
             className="rounded bg-ink-850/90 p-1 text-mist hover:text-status-failed"
-            title="Delete take"
+            title="テイクを削除"
           >
             <Trash2 size={12} />
           </button>
@@ -430,7 +430,7 @@ export function ShotDrawer({
       setSaved(true);
       qc.invalidateQueries({ queryKey: ["project", board.id] });
     },
-    onError: (e: Error) => toast(`Couldn't save: ${e.message}`, "error"),
+    onError: (e: Error) => toast(`保存できませんでした: ${e.message}`, "error"),
   });
   const saveRef = useRef(save);
 
@@ -439,7 +439,7 @@ export function ShotDrawer({
   const { data: health } = useHealth();
   const llmOk = healthOk(health?.llm);
   const llmHint =
-    "The writing assistant isn't set up — add it in Settings (or the setup wizard) to draft this for you.";
+    "文章アシスタントが未設定です。設定（またはセットアップウィザード）で追加すると自動で下書きできます。";
 
   const enhance = useMutation({
     mutationFn: () =>
@@ -452,9 +452,9 @@ export function ShotDrawer({
       }),
     onSuccess: (r) => {
       setForm((f) => (f ? { ...f, description: r.description } : f));
-      toast("Prompt enhanced — review it, tweak anything, then it saves like any edit.", "success");
+      toast("プロンプトを強化しました。確認・調整のうえ、通常の編集と同じく自動保存されます。", "success");
     },
-    onError: (e: Error) => toast(`Enhance failed: ${e.message}`, "error"),
+    onError: (e: Error) => toast(`強化に失敗しました: ${e.message}`, "error"),
   });
   saveRef.current = save;
 
@@ -472,9 +472,9 @@ export function ShotDrawer({
       }),
     onSuccess: (r) => {
       setForm((f) => (f ? { ...f, motion_prompt: r.motion_prompt } : f));
-      toast("Motion prompt drafted — review it, tweak anything, then it saves like any edit.", "success");
+      toast("モーションプロンプトの下書きを作成しました。確認・調整のうえ、通常の編集と同じく自動保存されます。", "success");
     },
-    onError: (e: Error) => toast(`Generate failed: ${e.message}`, "error"),
+    onError: (e: Error) => toast(`生成に失敗しました: ${e.message}`, "error"),
   });
 
   // The latest unsaved edit, kept so we can flush it on close / shot switch.
@@ -519,7 +519,7 @@ export function ShotDrawer({
         params: buildParams(selectedImageWf, paramValues),
       }),
     onSuccess: () => {
-      toast(`Queued ${nTakes} take${nTakes > 1 ? "s" : ""}.`, "success");
+      toast(`${nTakes} 枚のテイクをキューに追加しました。`, "success");
       invalidateAll();
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -536,7 +536,7 @@ export function ShotDrawer({
       apiPatch(`/api/scenes/${scene!.id}`, { plate_take_id: takeId }),
     onSuccess: () => {
       toast(
-        "Scene plate set — shots in this scene can anchor their renders to it with a plate hold.",
+        "シーンのプレートを設定しました。このシーンのショットはプレートホールドでレンダリングを固定できます。",
         "success",
       );
       invalidateAll();
@@ -565,7 +565,7 @@ export function ShotDrawer({
         frame_position: form?.frame_position === "last" ? "last" : "first",
       }),
     onSuccess: () => {
-      toast("Video render queued.", "success");
+      toast("動画レンダリングをキューに追加しました。", "success");
       invalidateAll();
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -610,9 +610,9 @@ export function ShotDrawer({
   const videoInFlight = !!activeVideoJob(jobs, shotId) || vTake?.status === "pending";
   const canRenderVideo = isApproved && pickedDone;
   const renderHint = !isApproved
-    ? "Approve this shot first — the video renders from the approved still."
+    ? "先にこのショットを承認してください — 動画は承認済みスチルからレンダリングされます。"
     : !pickedDone
-      ? "Pick a finished still first — the video starts from it."
+      ? "先に完成したスチルを選択してください — 動画はそのスチルから始まります。"
       : null;
 
   return (
@@ -623,27 +623,27 @@ export function ShotDrawer({
           {/* header */}
           <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
             <StatusRing status={shot.status} />
-            <h2 className="text-sm font-semibold">Shot {located?.label}</h2>
+            <h2 className="text-sm font-semibold">ショット {located?.label}</h2>
             <span className="text-xs text-fog">{statusLabel(shot.status)}</span>
             <span className="ml-auto flex items-center gap-1 text-[11px] text-fog">
               {saved ? (
                 <>
-                  <Check size={12} className="text-status-approved" /> saved
+                  <Check size={12} className="text-status-approved" /> 保存済み
                 </>
               ) : (
-                "saving…"
+                "保存中…"
               )}
             </span>
             <button
               onClick={() => {
-                if (window.confirm("Delete this shot?")) deleteShot.mutate();
+                if (window.confirm("このショットを削除しますか？")) deleteShot.mutate();
               }}
               className="rounded p-1 text-fog hover:text-status-failed"
-              title="Delete shot"
+              title="ショットを削除"
             >
               <Trash2 size={14} />
             </button>
-            <button onClick={onClose} className="rounded p-1 text-fog hover:text-paper" aria-label="Close">
+            <button onClick={onClose} className="rounded p-1 text-fog hover:text-paper" aria-label="閉じる">
               <X size={16} />
             </button>
           </div>
@@ -651,13 +651,13 @@ export function ShotDrawer({
           <div className="flex-1 overflow-y-auto px-5 py-4">
             {/* fields */}
             <div className="space-y-3.5">
-              <Field label="Description" hint="Type @ to reference a character.">
+              <Field label="説明" hint="@ を入力するとキャラクターを参照できます。">
                 <div>
                   <MentionTextarea
                     value={form.description}
                     onChange={(v) => setForm((f) => (f ? { ...f, description: v } : f))}
                     rows={3}
-                    placeholder="A lighthouse keeper climbs the spiral stairs, lantern in hand…"
+                    placeholder="灯守が提灯を手に螺旋階段を登っていく…"
                   />
                   {cast.length > 0 && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
@@ -667,8 +667,8 @@ export function ShotDrawer({
                           className="inline-flex items-center gap-1 rounded-full border border-line bg-ink-850 px-2 py-0.5 text-[10px] text-mist"
                           title={
                             c.lora_family
-                              ? `Trained for ${loraFamilyLabel(c.lora_family)} — only ${loraFamilyLabel(c.lora_family)} engines can render this character`
-                              : "No engine family recorded — works with any engine"
+                              ? `${loraFamilyLabel(c.lora_family)} 系で学習済み — ${loraFamilyLabel(c.lora_family)} 系エンジンのみこのキャラクターをレンダリングできます`
+                              : "エンジン系統の記録なし — どのエンジンでも使用可能"
                           }
                         >
                           @{c.handle}
@@ -685,16 +685,13 @@ export function ShotDrawer({
                     <p className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-snug text-amber-450">
                       <AlertTriangle size={12} className="mt-0.5 shrink-0" />
                       <span>
-                        Two trained characters in one shot: their identities blend into
-                        look-alike faces. Feature one @handle and describe the other
-                        person without theirs (from behind, silhouetted, distant) — or
-                        split the beat into singles.
+                        1 ショットに学習済みキャラクターが 2 人いると、顔が混ざり似た顔になります。1 人の @ハンドルだけを主役にし、もう 1 人は顔が写らない描写（後ろ姿・シルエット・遠景など）にするか、カットを分割してください。
                       </span>
                     </p>
                   )}
                   <div className="mt-1.5 flex items-center justify-between gap-2">
                     <span className="text-[11px] text-fog">
-                      {enhance.isPending ? "PromptSmith is polishing your notes…" : ""}
+                      {enhance.isPending ? "PromptSmith がメモを推敲中…" : ""}
                     </span>
                     <span title={llmOk ? undefined : llmHint}>
                       <Button
@@ -703,30 +700,30 @@ export function ShotDrawer({
                         onClick={() => enhance.mutate()}
                         busy={enhance.isPending}
                         disabled={!llmOk || !form.description.trim()}
-                        title="Rewrite these notes as a polished image prompt — the result lands here for you to review"
+                        title="このメモを磨き上げた画像プロンプトに書き直します。結果はここに表示され、確認してから保存されます"
                       >
-                        <Sparkles size={12} /> Enhance
+                        <Sparkles size={12} /> 強化
                       </Button>
                     </span>
                   </div>
                 </div>
               </Field>
               <div className="grid grid-cols-3 gap-3">
-                <Field label="Shot type">
+                <Field label="ショットタイプ">
                   <Input
                     value={form.shot_type}
                     onChange={(e) => setForm((f) => (f ? { ...f, shot_type: e.target.value } : f))}
                     placeholder="WIDE"
                   />
                 </Field>
-                <Field label="Camera">
+                <Field label="カメラ">
                   <Input
                     value={form.camera}
                     onChange={(e) => setForm((f) => (f ? { ...f, camera: e.target.value } : f))}
-                    placeholder="slow push in"
+                    placeholder="ゆっくりプッシュイン"
                   />
                 </Field>
-                <Field label="Duration (s)">
+                <Field label="長さ（秒）">
                   <Input
                     type="number"
                     min={0.5}
@@ -736,11 +733,11 @@ export function ShotDrawer({
                   />
                 </Field>
               </div>
-              <Field label="Dialogue">
+              <Field label="セリフ">
                 <Input
                   value={form.dialogue}
                   onChange={(e) => setForm((f) => (f ? { ...f, dialogue: e.target.value } : f))}
-                  placeholder="(optional)"
+                  placeholder="（任意）"
                 />
               </Field>
             </div>
@@ -757,7 +754,7 @@ export function ShotDrawer({
                       : "border-transparent text-fog hover:text-mist"
                   }`}
                 >
-                  {t}
+                  {t === "stills" ? "スチル" : "動画"}
                 </button>
               ))}
             </div>
@@ -766,15 +763,15 @@ export function ShotDrawer({
               <div className="space-y-4 pt-4">
                 {imageWorkflows.length > 0 ? (
                   <>
-                    <Field label="Engine">
+                    <Field label="エンジン">
                       <Select value={imageWf} onChange={(e) => setImageWf(e.target.value)}>
                         {imageWorkflows.map((w) => (
                           <option key={w.id} value={w.id} disabled={w.available === false}>
                             {w.name}
-                            {w.default ? " (default)" : ""}
-                            {w.available === false ? " (unavailable)" : ""}
+                            {w.default ? "（デフォルト）" : ""}
+                            {w.available === false ? "（利用不可）" : ""}
                             {familyConflict(w, cast)
-                              ? " (characters not compatible)"
+                              ? "（キャラクター非対応）"
                               : ""}
                             {engineSpeedSuffix(w)}
                           </option>
@@ -791,17 +788,9 @@ export function ShotDrawer({
                             )
                             .map((c) => `@${c.handle}`)
                             .join(", ")}{" "}
-                          {cast.filter(
-                            (c) =>
-                              c.lora_family &&
-                              c.lora_family !== selectedImageWf.lora_family,
-                          ).length === 1
-                            ? "was"
-                            : "were"}{" "}
-                          trained for a different engine family — this engine
-                          renders with{" "}
-                          {loraFamilyLabel(selectedImageWf.lora_family)}. Switch
-                          engines or remove the mention.
+                          が系統とは異なるエンジン系統で学習されています。このエンジンの系統は{" "}
+                          {loraFamilyLabel(selectedImageWf.lora_family)}
+                          です。エンジンを切り替えるか、メンションを外してください。
                         </p>
                       )}
                     </Field>
@@ -813,7 +802,7 @@ export function ShotDrawer({
                     {board.continuity_enabled &&
                       scene?.plate_take_id != null &&
                       selectedImageWf?.supports_plate && (
-                        <Field label="Plate hold">
+                        <Field label="プレートホールド">
                           <Select
                             value={form.plate_hold}
                             onChange={(e) =>
@@ -821,12 +810,12 @@ export function ShotDrawer({
                                 f ? { ...f, plate_hold: e.target.value } : f,
                               )
                             }
-                            title="How hard renders anchor to the scene plate's geometry. Tight inherits the plate's framing too — best for wides and re-establishes; medium keeps your framing while structures and palette hold."
+                            title="レンダリングをシーンプレートの構図にどれだけ固定するかを指定します。「強」はプレートのフレーミングも引き継ぎます（ワイドや再構築カット向け）。「中」は構図を保ちつつ構造と配色を合わせます。"
                           >
-                            <option value="">Off — prompt only</option>
-                            <option value="loose">Loose — palette & mood</option>
-                            <option value="medium">Medium — structures hold</option>
-                            <option value="tight">Tight — same framing</option>
+                            <option value="">オフ — プロンプトのみ</option>
+                            <option value="loose">弱 — 配色と雰囲気</option>
+                            <option value="medium">中 — 構造を合わせる</option>
+                            <option value="tight">強 — 同じフレーミング</option>
                           </Select>
                         </Field>
                       )}
@@ -836,18 +825,18 @@ export function ShotDrawer({
                           className="px-2 py-2 text-fog hover:text-paper disabled:opacity-40"
                           onClick={() => setNTakes((n) => Math.max(1, n - 1))}
                           disabled={nTakes <= 1}
-                          aria-label="Fewer takes"
+                          aria-label="テイクを減らす"
                         >
                           <Minus size={13} />
                         </button>
                         <span className="w-14 text-center text-sm">
-                          {nTakes} take{nTakes > 1 ? "s" : ""}
+                          {nTakes} 枚のテイク
                         </span>
                         <button
                           className="px-2 py-2 text-fog hover:text-paper disabled:opacity-40"
                           onClick={() => setNTakes((n) => Math.min(8, n + 1))}
                           disabled={nTakes >= 8}
-                          aria-label="More takes"
+                          aria-label="テイクを増やす"
                         >
                           <Plus size={13} />
                         </button>
@@ -859,13 +848,13 @@ export function ShotDrawer({
                         busy={generate.isPending}
                         disabled={selectedImageWf?.available === false}
                       >
-                        <Sparkles size={14} /> Generate
+                        <Sparkles size={14} /> 生成
                       </Button>
                     </div>
                   </>
                 ) : (
                   <p className="rounded-md border border-line p-3 text-sm text-fog">
-                    No image engine is set up yet — check Settings.
+                    画像エンジンが未設定です。設定を確認してください。
                   </p>
                 )}
 
@@ -898,16 +887,16 @@ export function ShotDrawer({
                     >
                       <CheckCircle2 size={15} />
                       {isApproved
-                        ? "Approved — click to unapprove"
+                        ? "承認済み — クリックで承認を解除"
                         : canApprove
-                          ? "Approve this shot"
-                          : "Pick a take to approve"}
+                          ? "このショットを承認"
+                          : "テイクを選択して承認"}
                     </Button>
                   </>
                 )}
                 {imageTakes.length === 0 && (
                   <p className="pt-1 text-center text-xs text-fog">
-                    No takes yet. Describe the shot above, then hit Generate.
+                    テイクはまだありません。上でショットを記述して「生成」を押してください。
                   </p>
                 )}
               </div>
@@ -916,20 +905,20 @@ export function ShotDrawer({
             {tab === "video" && (
               <div className="space-y-4 pt-4">
                 <Field
-                  label="Motion"
-                  hint="Describe how the shot should move — camera and subject."
+                  label="モーション"
+                  hint="ショットの動き — カメラと被写体 — を記述します。"
                 >
                   <div>
                     <MentionTextarea
                       value={form.motion_prompt}
                       onChange={(v) => setForm((f) => (f ? { ...f, motion_prompt: v } : f))}
                       rows={2}
-                      placeholder="waves crash as the light sweeps past, slow dolly forward"
+                      placeholder="波が打ち寄せ光が過ぎる、ゆっくりドリーイン"
                     />
                     <div className="mt-1.5 flex items-center justify-between gap-2">
                       <span className="text-[11px] text-fog">
                         {generateMotion.isPending
-                          ? "PromptSmith is drafting the motion…"
+                          ? "PromptSmith がモーションを作成中…"
                           : ""}
                       </span>
                       <span title={llmOk ? undefined : llmHint}>
@@ -939,7 +928,7 @@ export function ShotDrawer({
                           onClick={() => generateMotion.mutate()}
                           busy={generateMotion.isPending}
                           disabled={!llmOk || !form.description.trim()}
-                          title="Draft a motion prompt from everything this shot knows — description, camera, dialogue and frame anchor. The result lands here for you to review."
+                          title="このショットの情報（説明・カメラ・セリフ・フレーム基準）からモーションプロンプトの下書きを作成します。結果はここに表示され、確認できます。"
                         >
                           <Sparkles size={12} /> Generate
                         </Button>
@@ -949,18 +938,18 @@ export function ShotDrawer({
                 </Field>
                 {(selectedVideoWf?.supports_frame_position ?? false) && (
                   <Field
-                    label="Still anchors"
+                    label="スチル基準"
                     hint={
                       form.frame_position === "last"
-                        ? "Motion builds toward your still — the clip ends on it."
-                        : "The clip starts on your still and moves forward from it."
+                        ? "スチルに向かって動きます — クリップの末尾がスチルになります。"
+                        : "クリップはスチルから始まり、そこから動きます。"
                     }
                   >
                     <div className="flex overflow-hidden rounded-md border border-line">
                       {(
                         [
-                          ["first", "First frame"],
-                          ["last", "Last frame"],
+                          ["first", "先頭フレーム"],
+                          ["last", "末尾フレーム"],
                         ] as const
                       ).map(([value, label]) => (
                         <button
@@ -981,13 +970,13 @@ export function ShotDrawer({
                   </Field>
                 )}
                 {videoWorkflows.length > 0 && (
-                  <Field label="Engine">
+                  <Field label="エンジン">
                     <Select value={videoWf} onChange={(e) => setVideoWf(e.target.value)}>
                       {videoWorkflows.map((w) => (
                         <option key={w.id} value={w.id} disabled={w.available === false}>
                           {w.name}
-                          {w.default ? " (default)" : ""}
-                          {w.available === false ? " (unavailable)" : ""}
+                          {w.default ? "（デフォルト）" : ""}
+                          {w.available === false ? "（利用不可）" : ""}
                           {engineSpeedSuffix(w)}
                         </option>
                       ))}
@@ -1003,7 +992,7 @@ export function ShotDrawer({
                   disabled={!canRenderVideo || videoInFlight}
                 >
                   <Play size={14} />{" "}
-                  {videoInFlight ? "Rendering…" : "Render video"}
+                  {videoInFlight ? "レンダリング中…" : "動画をレンダリング"}
                 </Button>
                 {renderHint && (
                   <p className="text-center text-xs text-fog">{renderHint}</p>
@@ -1013,12 +1002,12 @@ export function ShotDrawer({
                 )}
                 {vTake && vTake.status === "pending" && (
                   <div className="flex items-center justify-center gap-2 rounded-md border border-line p-4 text-sm text-fog">
-                    <Spinner size={14} /> Rendering…
+                    <Spinner size={14} /> レンダリング中…
                   </div>
                 )}
                 {vTake && vTake.status === "failed" && (
                   <p className="rounded-md border border-status-failed/30 bg-status-failed/10 p-3 text-xs text-status-failed">
-                    {vTake.error ?? "The video render failed."}
+                    {vTake.error ?? "動画のレンダリングに失敗しました。"}
                   </p>
                 )}
               </div>

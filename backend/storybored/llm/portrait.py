@@ -25,6 +25,10 @@ vibe, backstory, style notes).
 OUTPUT: exactly one image prompt and nothing else — no preamble, no quotes, \
 no markdown, no explanation, no alternatives.
 
+LANGUAGE: write the prompt in Japanese, keeping the required opening phrase \
+"portrait photograph of @handle" from the rules below and every @handle \
+token exactly as written; all other text is Japanese.
+
 RULES:
 - Start with "portrait photograph of @handle", keeping the given @handle \
 token EXACTLY as written. Never rename, expand, or describe the token itself.

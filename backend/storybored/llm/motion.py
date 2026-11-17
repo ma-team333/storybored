@@ -28,6 +28,10 @@ context, and whether the still is the FIRST or the LAST frame of the clip.
 OUTPUT: exactly one motion prompt and nothing else — no preamble, no quotes, \
 no markdown, no explanation, no alternatives.
 
+LANGUAGE: write the motion prompt in Japanese. Keep every @handle token and \
+the literal "Audio:" prefix of the final sentence unchanged; all other text \
+is Japanese.
+
 RULES:
 - Describe motion, not appearance: how the subject moves, how the camera moves, \
 how the environment lives (wind, rain, steam, flicker). The model already sees \

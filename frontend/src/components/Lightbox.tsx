@@ -43,8 +43,8 @@ export function Lightbox({
     >
       <div className="flex items-center justify-between px-5 py-3">
         <span className="text-sm text-fog">
-          Take {index + 1} of {takes.length}
-          {take.seed != null && <span className="ml-3 text-fog/60">seed {take.seed}</span>}
+          テイク {index + 1} / {takes.length}
+          {take.seed != null && <span className="ml-3 text-fog/60">シード {take.seed}</span>}
         </span>
         <div className="flex items-center gap-2">
           {onPick && take.status === "done" && (
@@ -57,13 +57,13 @@ export function Lightbox({
               }`}
             >
               <Star size={14} className={isPicked ? "fill-amber-450" : ""} />
-              {isPicked ? "Picked" : "Pick this take"}
+              {isPicked ? "選択済み" : "このテイクを選択"}
             </button>
           )}
           <button
             onClick={onClose}
             className="rounded-md p-1.5 text-fog hover:text-paper"
-            aria-label="Close"
+            aria-label="閉じる"
           >
             <X size={18} />
           </button>
@@ -74,7 +74,7 @@ export function Lightbox({
           <button
             onClick={() => onNavigate(index - 1)}
             className="absolute left-3 rounded-full border border-line-bright bg-ink-850/80 p-2 text-mist hover:text-paper"
-            aria-label="Previous take"
+            aria-label="前のテイク"
           >
             <ChevronLeft size={18} />
           </button>
@@ -85,14 +85,14 @@ export function Lightbox({
           <img src={url} alt="" className="max-h-full max-w-full rounded-lg object-contain" />
         ) : (
           <p className="text-sm text-fog">
-            {take.status === "failed" ? (take.error ?? "This take failed.") : "Still rendering…"}
+            {take.status === "failed" ? (take.error ?? "このテイクは失敗しました。") : "レンダリング中…"}
           </p>
         )}
         {index < takes.length - 1 && (
           <button
             onClick={() => onNavigate(index + 1)}
             className="absolute right-3 rounded-full border border-line-bright bg-ink-850/80 p-2 text-mist hover:text-paper"
-            aria-label="Next take"
+            aria-label="次のテイク"
           >
             <ChevronRight size={18} />
           </button>

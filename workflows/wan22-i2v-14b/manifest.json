@@ -1,21 +1,21 @@
 {
   "id": "wan22-i2v-14b",
-  "name": "Wan 2.2 — 14B Image to Video",
+  "name": "Wan 2.2 — 14B 画像から動画",
   "kind": "video",
-  "description": "Wan 2.2 I2V-A14B (fp8, Apache 2.0): the highest-quality license-clean video engine. Two expert models sample in sequence — high-noise for motion, low-noise for detail — with the lightx2v 4-step LoRAs baked for speed. Silent ~5 s clips at 16 fps; 24 GB-class card recommended. LoRAs you append in Settings apply to the low-noise (detail) expert.",
+  "description": "Wan 2.2 I2V-A14B (fp8、Apache 2.0):ライセンス的に最もクリーンで最高品質の動画エンジン。高ノイズ(モーション担当)と低ノイズ(ディテール担当)の各エキスパートモデルが順にサンプリングし、高速化のため lightx2v 4 ステップ LoRA を組み込み済み。16fps の無音クリップ約 5 秒。24 GB クラスの GPU を推奨。設定で追加した LoRA は低ノイズ(ディテール)エキスパートに適用される。",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Motion prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "first_frame", "label": "First frame", "type": "image", "node": "5", "input": "image"},
-    {"key": "length", "label": "Length (frames, 16fps)", "type": "int", "node": "8", "input": "length", "default": 81},
-    {"key": "width", "label": "Width", "type": "int", "node": "8", "input": "width", "default": 640},
-    {"key": "height", "label": "Height", "type": "int", "node": "8", "input": "height", "default": 640},
+    {"key": "prompt", "label": "モーションプロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "first_frame", "label": "先頭フレーム", "type": "image", "node": "5", "input": "image"},
+    {"key": "length", "label": "長さ(フレーム数、16fps)", "type": "int", "node": "8", "input": "length", "default": 81},
+    {"key": "width", "label": "幅", "type": "int", "node": "8", "input": "width", "default": 640},
+    {"key": "height", "label": "高さ", "type": "int", "node": "8", "input": "height", "default": 640},
     {"key": "seed", "type": "seed", "node": "sampler_high", "input": "noise_seed"}
   ],
   "output_node": "12",
   "model_slots": [
-    {"key": "unet_high", "label": "High-noise expert", "node": "unet_high", "input": "unet_name"},
-    {"key": "unet_low", "label": "Low-noise expert", "node": "unet_low", "input": "unet_name"}
+    {"key": "unet_high", "label": "高ノイズエキスパート", "node": "unet_high", "input": "unet_name"},
+    {"key": "unet_low", "label": "低ノイズエキスパート", "node": "unet_low", "input": "unet_name"}
   ],
   "lora_injection": {"after_node": "lora_low", "class_type": "LoraLoaderModelOnly"},
   "required_models": {

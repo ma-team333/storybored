@@ -23,25 +23,25 @@ const ROLE_ROWS: {
 }[] = [
   {
     role: "prompt",
-    label: "Prompt",
-    hint: "Where the shot description is written.",
+    label: "プロンプト",
+    hint: "ショットの説明文を書き込むノードです。",
     required: true,
   },
-  { role: "seed", label: "Seed", hint: "Randomized per take so takes are reproducible." },
-  { role: "size", label: "Size", hint: "The node holding width and height." },
+  { role: "seed", label: "シード", hint: "テイクごとにランダム化され、結果の再現に使われます。" },
+  { role: "size", label: "サイズ", hint: "幅と高さを持つノードです。" },
   {
     role: "output",
-    label: "Output",
-    hint: "The save node StoryBored reads results from.",
+    label: "出力",
+    hint: "StoryBored が結果を読み取る保存ノードです。",
     required: true,
   },
   {
     role: "image",
-    label: "Still input",
-    hint: "Receives the shot's approved still.",
+    label: "スチル入力",
+    hint: "ショットの承認済みスチルを受け取るノードです。",
     videoOnly: true,
   },
-  { role: "length", label: "Clip length", hint: "Frames per clip.", videoOnly: true },
+  { role: "length", label: "クリップ長", hint: "1 クリップのフレーム数。", videoOnly: true },
 ];
 
 function slugify(name: string): string {
@@ -53,7 +53,7 @@ function slugify(name: string): string {
 }
 
 function candidateLabel(c: AnalyzeCandidate): string {
-  const bits = [`node ${c.node}`, c.class_type ?? ""];
+  const bits = [`ノード ${c.node}`, c.class_type ?? ""];
   if (c.role) bits.push(c.role);
   if (c.lora_name) bits.push(c.lora_name);
   if (c.preview) bits.push(`“${c.preview.slice(0, 48)}…”`);
@@ -100,7 +100,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
       try {
         analyze.mutate(JSON.parse(text));
       } catch {
-        setFileError("That file isn't JSON — export the workflow again and retry.");
+        setFileError("このファイルは JSON ではありません。ワークフローを再度書き出してからお試しください。");
       }
     });
   };
@@ -114,7 +114,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
 
   const create = useMutation({
     mutationFn: () => {
-      if (!analysis || !graph) throw new Error("no analyzed workflow");
+      if (!analysis || !graph) throw new Error("ワークフローを解析できませんでした");
       const kind = analysis.kind;
       const cand = (role: string): AnalyzeCandidate | undefined =>
         analysis.roles[role]?.candidates.find((c) => c.node === picks[role]);
@@ -123,7 +123,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
       if (prompt) {
         parameters.push({
           key: "prompt",
-          label: kind === "video" ? "Motion prompt" : "Prompt",
+          label: kind === "video" ? "モーションプロンプト" : "プロンプト",
           type: "prompt",
           node: prompt.node,
           input: prompt.input,
@@ -136,8 +136,8 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
       const size = cand("size");
       if (size) {
         parameters.push(
-          { key: "width", label: "Width", type: "int", node: size.node, input: "width", default: size.width },
-          { key: "height", label: "Height", type: "int", node: size.node, input: "height", default: size.height },
+          { key: "width", label: "幅", type: "int", node: size.node, input: "width", default: size.width },
+          { key: "height", label: "高さ", type: "int", node: size.node, input: "height", default: size.height },
         );
       }
       if (kind === "video") {
@@ -145,7 +145,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
         if (image) {
           parameters.push({
             key: "first_frame",
-            label: "First frame",
+            label: "先頭フレーム",
             type: "image",
             node: image.node,
             input: image.input,
@@ -155,7 +155,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
         if (length) {
           parameters.push({
             key: "length",
-            label: "Length (frames)",
+            label: "長さ（フレーム数）",
             type: "int",
             node: length.node,
             input: length.input,
@@ -187,7 +187,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
         body.model_slots = [
           {
             key: slot.key,
-            label: kind === "video" ? "Video model" : "Base model",
+            label: kind === "video" ? "動画モデル" : "ベースモデル",
             node: slot.node,
             input: slot.input,
           },
@@ -210,14 +210,13 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
   const seamCands = analysis?.roles.seam?.candidates ?? [];
 
   return (
-    <Modal title="Import workflow" onClose={onClose} wide>
+    <Modal title="ワークフローを読み込む" onClose={onClose} wide>
       {step === "file" && (
         <div>
           <p className="mb-3 text-sm text-fog">
-            Turn your own ComfyUI workflow into a StoryBored engine. Upload the
-            workflow's <span className="font-medium text-paper">API-format</span>{" "}
-            export — in ComfyUI, enable dev mode (Settings → "Enable Dev mode
-            Options"), then use "Save (API Format)".
+            自分の ComfyUI ワークフローを StoryBored のエンジンにできます。ワークフローを <span className="font-medium text-paper">API 形式</span>{" "}
+            で書き出してアップロードしてください。ComfyUI で開発者モード（設定 → "Enable Dev mode
+            Options"）を有効にし、"Save (API Format)" を使用します。
           </p>
           <div
             onDragOver={(e) => {
@@ -232,7 +231,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
             onClick={() => inputRef.current?.click()}
           >
             <FileJson size={22} />
-            <span className="text-sm">Drop the exported .json here, or click to pick it</span>
+            <span className="text-sm">書き出した .json をドロップするか、クリックして選択してください</span>
           </div>
           <input
             ref={inputRef}
@@ -245,7 +244,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
               e.target.value = "";
             }}
           />
-          {analyze.isPending && <p className="mt-3 text-xs text-fog">Reading the workflow…</p>}
+          {analyze.isPending && <p className="mt-3 text-xs text-fog">ワークフローを読み込み中…</p>}
           {fileError && <p className="mt-3 text-xs text-status-failed">{fileError}</p>}
         </div>
       )}
@@ -254,8 +253,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
         <div>
           <div className="mb-3 flex items-center gap-2">
             <p className="flex-1 text-sm text-fog">
-              StoryBored read {analysis.node_count} nodes and guessed the important
-              ones — confirm or correct each mapping.
+              StoryBored が {analysis.node_count} 個のノードを読み込み、重要なノードを推測しました。各マッピングを確認・修正してください。
             </p>
             <Badge tone="fog">{analysis.kind}</Badge>
           </div>
@@ -281,9 +279,9 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
                       <option value="">
                         {required
                           ? cands.length
-                            ? "Choose a node…"
-                            : "No matching node found"
-                          : "Not used"}
+                            ? "ノードを選択…"
+                            : "該当するノードが見つかりません"
+                          : "使用しない"}
                       </option>
                       {cands.map((c) => (
                         <option key={`${c.node}-${c.input ?? ""}`} value={c.node}>
@@ -296,14 +294,14 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
               },
             )}
             <Field
-              label="Style & character attachment"
-              hint="Where characters and extra style LoRAs hook into the graph — usually the last LoRA in your chain, or the model loader."
+              label="スタイル・キャラクターの注入位置"
+              hint="キャラクターや追加スタイル LoRA をグラフに組み込む位置です。通常は LoRA チェーンの最後、またはモデルローダーを指定します。"
             >
               <Select
                 value={picks.seam ?? ""}
                 onChange={(e) => setPicks({ ...picks, seam: e.target.value })}
               >
-                <option value="">Not used — characters and styles stay off</option>
+                <option value="">使用しない — キャラクターとスタイルは無効のまま</option>
                 {seamCands.map((c) => (
                   <option key={c.node} value={c.node}>
                     {candidateLabel(c)}
@@ -313,17 +311,17 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
             </Field>
             {analysis.model_slots.length > 0 && (
               <Field
-                label="Swappable model"
-                hint="Lets you swap this engine's base model from Settings later."
+                label="差し替え可能なモデル"
+                hint="後から設定画面でこのエンジンのベースモデルを差し替えられます。"
               >
                 <Select
                   value={picks.slot ?? ""}
                   onChange={(e) => setPicks({ ...picks, slot: e.target.value })}
                 >
-                  <option value="">Not swappable</option>
+                  <option value="">差し替え不可</option>
                   {analysis.model_slots.map((s) => (
                     <option key={s.node} value={s.node}>
-                      node {s.node} — {s.class_type} — {s.value}
+                      ノード {s.node} — {s.class_type} — {s.value}
                     </option>
                   ))}
                 </Select>
@@ -332,14 +330,14 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
           </div>
           <div className="mt-4 flex justify-between">
             <Button variant="ghost" onClick={() => setStep("file")}>
-              Back
+              戻る
             </Button>
             <Button
               variant="primary"
               disabled={!picks.prompt || !picks.output}
               onClick={() => setStep("name")}
             >
-              Next
+              次へ
             </Button>
           </div>
         </div>
@@ -347,20 +345,20 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
 
       {step === "name" && analysis && (
         <div className="space-y-3.5">
-          <Field label="Name" hint="Shown in the engine selector.">
+          <Field label="名前" hint="エンジン選択 UI に表示されます。">
             <Input
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
                 if (!idDirty) setId(slugify(e.target.value));
               }}
-              placeholder="My photoreal look"
+              placeholder="マイフォトリアル風"
               autoFocus
             />
           </Field>
           <Field
-            label="Id"
-            hint="Lowercase letters, digits and hyphens. Pick it once — it's stored on every take rendered with this engine."
+            label="ID"
+            hint="小文字英字・数字・ハイフンのみ。後から変更できないため、このエンジンでレンダリングした全テイクに記録されます。"
           >
             <Input
               value={id}
@@ -371,22 +369,27 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
               placeholder="my-photoreal-look"
             />
           </Field>
-          <Field label="Description (optional)">
+          <Field label="説明（任意）">
             <TextArea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="One or two sentences about the look."
+              placeholder="このルックについて 1〜2 文で説明してください。"
             />
           </Field>
           {!idOk && id !== "" && (
             <p className="text-xs text-status-failed">
-              The id must be a lowercase slug, e.g. "my-photoreal-look".
+              ID は小文字のスラッグ形式にしてください（例: "my-photoreal-look"）。
+            </p>
+          )}
+          {!idOk && id === "" && name.trim() !== "" && (
+            <p className="text-xs text-status-failed">
+              名前から ID を自動生成できませんでした。半角英小文字・数字・ハイフンで ID を入力してください。
             </p>
           )}
           <div className="flex justify-between pt-1">
             <Button variant="ghost" onClick={() => setStep("map")}>
-              Back
+              戻る
             </Button>
             <Button
               variant="primary"
@@ -394,7 +397,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
               busy={create.isPending}
               onClick={() => create.mutate()}
             >
-              <Upload size={14} /> Create engine
+              <Upload size={14} /> エンジンを作成
             </Button>
           </div>
         </div>
@@ -405,33 +408,32 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
           <div className="mb-3 flex items-center gap-2">
             <CheckCircle2 size={18} className="text-status-approved" />
             <span className="flex-1 text-sm font-medium text-paper">
-              {created.name} is installed
+              {created.name} をインストールしました
             </span>
             {created.available ? (
-              <Badge tone="green">ready</Badge>
+              <Badge tone="green">利用可能</Badge>
             ) : created.error ? (
-              <Badge tone="amber">engine offline</Badge>
+              <Badge tone="amber">エンジン オフライン</Badge>
             ) : created.missing_models.length > 0 ? (
-              <Badge tone="red">missing models</Badge>
+              <Badge tone="red">モデル不足</Badge>
             ) : (
-              <Badge tone="red">missing nodes</Badge>
+              <Badge tone="red">ノード不足</Badge>
             )}
           </div>
           {created.available ? (
             <p className="text-sm text-fog">
-              Everything it needs is installed — it's ready to render.
+              必要なものがすべて揃っています。すぐにレンダリングできます。
             </p>
           ) : created.error ? (
             <p className="text-sm text-fog">
-              The rendering engine couldn't be reached, so availability isn't
-              checked yet — it will be the next time the engine is up.
+              レンダリングエンジンに接続できなかったため、利用可否は未確認です。エンジンが起動した次回に確認されます。
             </p>
           ) : (
             <div>
               {created.missing_models.length > 0 && (
                 <>
                   <p className="mb-1.5 text-sm text-fog">
-                    It needs model files that aren't installed yet:
+                    未インストールのモデルファイルが必要です:
                   </p>
                   <ul className="mb-2 space-y-1">
                     {created.missing_models.map((f) => (
@@ -445,7 +447,7 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
               {created.missing_nodes.length > 0 && (
                 <>
                   <p className="mb-1.5 text-sm text-fog">
-                    It uses nodes your rendering engine doesn't have:
+                    レンダリングエンジンに存在しないノードを使用しています:
                   </p>
                   <ul className="mb-2 space-y-1">
                     {created.missing_nodes.map((n) => (
@@ -457,18 +459,16 @@ export function ImportWorkflowWizard({ onClose }: { onClose: () => void }) {
                 </>
               )}
               <p className="text-xs text-fog">
-                Expand the engine's row in the list below for download links and
-                folder guidance — same as any other engine with missing pieces.
+                下のリストでこのエンジンの行を展開すると、ダウンロードリンクとフォルダーの案内を確認できます。他の不足ありエンジンと同じ手順です。
               </p>
             </div>
           )}
           <p className="mt-3 text-xs text-fog">
-            The engine now appears in the Engines list here and in the shot
-            drawer's engine menu.
+            このエンジンはエンジン一覧と、ショットドロワーのエンジンメニューにも表示されます。
           </p>
           <div className="mt-4 flex justify-end">
             <Button variant="primary" onClick={onClose}>
-              Done
+              完了
             </Button>
           </div>
         </div>

@@ -1,67 +1,63 @@
-# Authoring engine packs
+# エンジンパックの作成
 
-An **engine pack** is how StoryBored talks to ComfyUI without users ever seeing
-a node graph. A pack is a folder containing exactly two files:
+**エンジンパック**は、ユーザーにノードグラフを見せることなく StoryBored が ComfyUI と
+やり取りする仕組みです。パックは 2 つのファイルだけを含むフォルダです:
 
 ```
 workflows/<pack-id>/
-  manifest.json   # what StoryBored needs to know about the graph
-  graph.json      # a ComfyUI graph in API format
+  manifest.json   # StoryBored がグラフについて知る必要があること
+  graph.json      # API 形式の ComfyUI グラフ
 ```
 
-StoryBored scans two places for packs:
+StoryBored はパックを 2 か所でスキャンします:
 
-- `workflows/` inside the repo (the packs that ship with StoryBored), and
-- `DATA_DIR/workflows/` (your own packs — survive upgrades, no fork needed).
+- リポジトリ内の `workflows/`(StoryBored 同梱のパック)
+- `DATA_DIR/workflows/`(あなたのパック — アップグレード後も残り、フォーク不要)
 
-Drop a folder into either location and it appears in the engine selector.
-If a pack references models your ComfyUI doesn't have, StoryBored **flags it as
-unavailable and lists the missing models** in Settings — it never hides the
-pack or crashes. Missing files are enriched from the model catalog (see
-[MODELS.md](MODELS.md#the-catalog)); add a `DATA_DIR/workflows/catalog.json`
-entry per file if you want your pack's missing-model list to carry a download
-link, size and license too.
+どちらかの場所にフォルダを置けば、エンジンセレクタに表示されます。パックが
+ComfyUI にないモデルを参照している場合、StoryBored はそのパックを**利用不可として
+フラグし、不足モデルを一覧表示**します — パックを隠したりクラッシュしたりしません。
+不足ファイルはモデルカタログから情報が補完されます([MODELS.md](MODELS.md#the-catalog) 参照)。
+パックの不足モデル一覧にダウンロードリンク・サイズ・ライセンスを持たせたい場合は、
+ファイルごとに `DATA_DIR/workflows/catalog.json` エントリを追加します。
 
-## Import from the UI (the easy path)
+## UI からの読み込み(簡単な方法)
 
-You don't have to write a manifest at all: **Settings → Engines → Import
-workflow** turns an API-format export into a pack from inside StoryBored.
+マニフェストを自力で書く必要はありません:**設定 → エンジン → ワークフローを読み込む**が、
+StoryBored 内で API 形式の書き出しをパックに変換します。
 
-1. Export your workflow in API format (see the next section) and drop the
-   `.json` into the wizard.
-2. StoryBored analyzes the graph and pre-fills the mappings this document
-   teaches you to find by hand: the prompt (it traces the sampler's
-   positive/negative conditioning links to tell the two text encodes apart),
-   the seed, the width/height node, the save node, swappable model loaders,
-   and the LoRA seam (`character_injection` for image graphs,
-   `lora_injection` for video). Each guess is a dropdown of the graph's
-   eligible nodes — confirm or correct; only the prompt and the output are
-   required. Ambiguity (two text encodes, no save node) is surfaced as a
-   choice, never an error.
-3. Name it, give it an id, done. The pack lands in `DATA_DIR/workflows/<id>/`
-   with `required_models` derived from the graph's loader nodes (exactly what
-   `validate-pack --write` produces), passes the same offline validation, and
-   shows up immediately in the engine selector — availability-checked like any
-   other pack, with missing models/nodes listed in Settings.
+1. ワークフローを API 形式で書き出し(次の節参照)、その `.json` をウィザードに
+   ドロップします。
+2. StoryBored はグラフを解析し、このドキュメントが手動で見つける方法を説明している
+   マッピングを自動入力します:プロンプト(サンプラーの positive/negative conditioning
+   リンクを追跡して 2 つの text encode を区別)、シード、width/height ノード、
+   save ノード、差し替え可能なモデルローダー、そして LoRA の接合点
+   (画像グラフなら `character_injection`、動画なら `lora_injection`)。各推測は
+   グラフの候補ノードのドロップダウンです — 確認または修正します。必須はプロンプトと
+   出力だけ。曖昧さ(2 つの text encode、save ノードなし)は選択肢として表示され、
+   エラーにはなりません。
+3. 名前を付け、id を与え、完了。パックは `DATA_DIR/workflows/<id>/` に置かれ、
+   `required_models` はグラフのローダーノードから導出され(`validate-pack --write` が
+   作るものとまったく同じ)、同じオフライン検証を通過し、エンジンセレクタに即座に
+   表示されます — 他のパックと同様に利用可否チェックされ、不足モデル/ノードは設定に
+   一覧表示されます。
 
-Imported packs carry an **imported** badge and a **Remove this engine** button
-in their Settings row; packs that ship with StoryBored can't be removed. The
-wizard only accepts API-format exports — the editor-format "Save" file is
-rejected with a pointer to the dev-mode export.
+読み込まれたパックには設定行に**読み込み済み**バッジと**このエンジンを削除**ボタンが
+付きます。StoryBored 同梱のパックは削除できません。ウィザードが受け付けるのは
+API 形式の書き出しのみ — エディタ形式の「Save」ファイルは、dev モード書き出しを
+案内するメッセージとともに拒否されます。
 
-The rest of this document is the manual route: write `manifest.json` yourself
-for full control (defaults, extra parameters like steps, `disable_nodes`,
-`required_nodes`, frame conditioning tweaks) or to understand what the wizard
-generated.
+このドキュメントの残りは手動ルートです:完全な制御(既定値、steps などの追加パラメータ、
+`disable_nodes`、`required_nodes`、フレーム conditioning の調整)のために自分で
+`manifest.json` を書くか、ウィザードが生成したものを理解するために読みます。
 
-## graph.json: the API-format export
+## graph.json:API 形式の書き出し
 
-ComfyUI has two graph formats. Packs use the **API format** — the JSON that
-`POST /prompt` accepts — *not* the format from "Save" / drag-and-drop.
+ComfyUI には 2 つのグラフ形式があります。パックが使うのは **API 形式** —
+`POST /prompt` が受け付ける JSON — であって「Save」/ドラッグ&ドロップの形式では*ありません*。
 
-To export it: in ComfyUI, enable **dev mode** (Settings → "Enable Dev mode
-Options"), then use **Save (API Format)**. You get a JSON object keyed by node
-id:
+書き出すには:ComfyUI で **dev モード**を有効化(設定 →「Enable Dev mode Options」)し、
+**Save (API Format)** を使います。ノード id をキーにした JSON オブジェクトが得られます:
 
 ```json
 {
@@ -82,29 +78,31 @@ id:
 }
 ```
 
-Two things to internalize:
+覚えておくべき 2 つのこと:
 
-- **Node ids are the top-level keys** (`"3"`, `"6"`, …). They are strings, they
-  are arbitrary, and they are what the manifest points at.
-- **Links are `[node_id, output_index]` pairs.** `"model": ["4", 0]` means
-  "input `model` comes from output 0 of node 4". This is how StoryBored splices
-  character LoRAs into your graph (see below).
+- **ノード id がトップレベルのキーです**(`"3"`, `"6"`, …)。文字列で、任意で、
+  マニフェストが指す対象です。
+- **リンクは `[node_id, output_index]` のペアです。** `"model": ["4", 0]` は
+  「入力 `model` はノード 4 の出力 0 から来る」という意味。StoryBored はこれで
+  キャラクター LoRA をグラフにスプライスします(後述)。
 
-### Finding the node ids you need
+### 必要なノード id を見つける
 
-Open your exported `graph.json` and search by `class_type`:
+書き出した `graph.json` を開き、`class_type` で検索します:
 
-- the **prompt** usually lives on a `CLIPTextEncode` node, input `text`;
-- the **seed** on your sampler (`KSampler` → `seed`, or `RandomNoise` →
-  `noise_seed` in advanced-sampler graphs);
-- **width/height** on `EmptyLatentImage` (or the video node itself);
-- the **output** is your `SaveImage` / `SaveVideo` node.
+- **プロンプト**は通常 `CLIPTextEncode` ノードの入力 `text` にあります;
+- **シード**はサンプラー上(`KSampler` → `seed`、発展サンプラーグラフでは
+  `RandomNoise` → `noise_seed`);
+- **width/height** は `EmptyLatentImage`(または動画ノード自体);
+- **出力**はあなたの `SaveImage` / `SaveVideo` ノードです。
 
-Tip: give nodes memorable titles in the ComfyUI editor before exporting — the
-API export keeps only ids, so keep the editor-format `.json` around as your
-"source" and re-export after edits.
+ヒント:書き出す前に ComfyUI エディタでノードに分かりやすいタイトルを付けましょう —
+API 書き出しは id しか保持しないため、エディタ形式の `.json` を「ソース」として
+取っておき、編集後に再書き出しするのが良いでしょう。
 
-## manifest.json, field by field
+## manifest.json、フィールドごと
+
+<a id="manifestjson-field-by-field"></a>
 
 ```json
 {
@@ -127,126 +125,124 @@ API export keeps only ids, so keep the editor-format `.json` around as your
 }
 ```
 
-| Field | Required | Meaning |
+| フィールド | 必須 | 意味 |
 | --- | --- | --- |
-| `id` | yes | Unique slug. Must match the folder name. Stored on takes (`take.workflow_id`) so renames orphan history — pick it once. |
-| `name` | yes | Human label shown in the engine selector. |
-| `kind` | yes | `"image"` or `"video"`. Determines which UI offers the pack and which GPU mode command runs before the job (`COMFY_MODE_IMAGE_CMD` / `COMFY_MODE_VIDEO_CMD`). |
-| `description` | no | One or two sentences shown under the name. |
-| `graph` | yes | Filename of the API-format graph, relative to the pack folder. Conventionally `graph.json`. |
-| `parameters` | yes | The knobs StoryBored is allowed to turn. Each entry maps a UI parameter onto one node input: the engine literally does `graph[node]["inputs"][input] = value`. Fields per entry: `key` (unique within the pack), optional `label` (UI text; defaults to the key), `type` (see below), `node` (node id string), `input` (input name on that node), optional `default`. |
-| `output_node` | yes | Id of the `SaveImage` / `SaveVideo` node. StoryBored rewrites its `filename_prefix` per take and reads results from ComfyUI history for this node. |
-| `character_injection` | no | Where `@character` LoRAs get spliced in (image packs; see next section). Omit it and the pack simply ignores characters. Add `"class_type": "LoraLoaderModelOnly"` when the seam node has no clip output (a bare `UNETLoader`, or a model-only LoRA chain — the Z-Image/Qwen-Image graphs): characters then splice on the model path only, instead of referencing a clip output that doesn't exist. |
-| `lora_injection` | no | Where user-appended LoRAs splice in when the pack has no `character_injection` (video packs): `{"after_node": "1", "class_type": "LoraLoaderModelOnly"}`. `class_type` defaults to `LoraLoader`; model-only loaders take over only the model path (no clip). |
-| `model_slots` | no | Loader inputs users may swap from Settings: `[{"key": "unet", "label": "Base model", "node": "1", "input": "unet_name"}]`. The UI lists the engine's dropdown enum for each slot; choices are stored in the `engine_models` setting and written onto the input at render time. |
-| `frame_conditioning` | no | Video packs whose sampler accepts both a first- and a last-frame image: `{"node": "6", "first": "first_frame", "last": "last_frame"}`. Enables the shot-level "still anchors first/last frame" toggle — "last" moves whatever feeds the first input onto the last input. |
-| `required_models` | no | Map of `"<ClassType>.<input_name>"` → list of model filenames the graph needs. Validated against ComfyUI `/object_info` enums (cached 60 s); misses mark the pack unavailable with the missing names listed. Availability checks the **effective** set: a user's Settings model swap replaces the baked filename, and a baked LoRA the user toggled off is not required. |
-| `required_nodes` | no | Extra node **class names** to require beyond what the graph already references (rarely needed — every `class_type` in your graph is checked automatically). Missing classes mark the pack unavailable with a "missing custom nodes" list, so users learn they need a node pack, not a model file. |
-| `license_note` | no | One honest sentence (or two) about real-world caveats in the pack's **model license** — territory exclusions, revenue caps, revocable grants, hardware-locked default files. Shown as a small warning line in the pack's Settings row and in the setup wizard's engine list. Leave it out for clean licenses (Apache/MIT); don't use it for marketing. The shipped Krea 2 packs (community license: sub-$1M revenue, revocable) and `minimax-h3-i2v` (US/EU/UK/South-Korea territory exclusion + Blackwell-only default file) carry examples. |
-| `lora_family` | no | The **model family** this pack's character LoRAs must belong to — a lowercase slug like `"krea2"`, `"z-image"` or `"qwen-image"`. Character LoRAs are family-bound (one trained for Krea 2 is inert on Z-Image), so StoryBored uses this id to pre-flight renders: a shot casting a character whose recorded family differs from the pack's is rejected with a clear 409 before anything queues, and the shot drawer marks such engines as "characters not compatible". It also targets training: the trainer is told to produce a LoRA of the default image engine's family. Omit it for a family-agnostic pack — absent means "no checks", never a block. The shipped image packs declare `krea2` (both Krea 2 packs), `z-image` and `qwen-image`. |
-| `prompt_guide` | no | Teaches the writing assistant how *your model* wants to be prompted: `{"style": "<one-paragraph description>", "examples": ["<good prompt>", ...]}` (examples optional, max 3). Injected into every LLM prompt-assembly pass — Enhance, script/story-vibes breakdown, motion drafts — whenever your pack is the engine that will render the result. A malformed guide is logged and ignored, never fatal. See "Teach the assistant your model's prompt style" below. |
+| `id` | はい | 一意な slug。フォルダ名と一致する必要があります。テイクに保存される(`take.workflow_id`)ため、変更すると履歴が孤立します — 一度決めたら変えないこと。 |
+| `name` | はい | エンジンセレクタに表示される人間向けラベル。 |
+| `kind` | はい | `"image"` または `"video"`。どの UI がパックを提示するか、ジョブ前にどの GPU モードコマンドを実行するか(`COMFY_MODE_IMAGE_CMD` / `COMFY_MODE_VIDEO_CMD`)を決めます。 |
+| `description` | いいえ | 名前の下に表示される 1〜2 文。 |
+| `graph` | はい | API 形式グラフのファイル名。パックフォルダからの相対パス。慣例では `graph.json`。 |
+| `parameters` | はい | StoryBored が操作できる knobs。各エントリは UI パラメータを 1 つのノード入力にマップします:エンジンは文字どおり `graph[node]["inputs"][input] = value` を実行します。エントリごとのフィールド:`key`(パック内で一意)、任意の `label`(UI テキスト;既定は key)、`type`(後述)、`node`(ノード id 文字列)、`input`(そのノードの入力名)、任意の `default`。 |
+| `output_node` | はい | `SaveImage` / `SaveVideo` ノードの id。StoryBored はテイクごとにその `filename_prefix` を書き換え、このノードについて ComfyUI 履歴から結果を読みます。 |
+| `character_injection` | いいえ | `@character` LoRA のスプライス先(画像パック;次節参照)。省略するとパックはキャラクターを単に無視します。接合ノードに clip 出力がない場合(素の `UNETLoader`、model-only LoRA チェーン — Z-Image/Qwen-Image グラフ)は `"class_type": "LoraLoaderModelOnly"` を追加します。キャラクターは model パスのみでスプライスされ、存在しない clip 出力を参照しなくなります。 |
+| `lora_injection` | いいえ | パックに `character_injection` がない場合(動画パック)にユーザー追加 LoRA がスプライスされる場所:`{"after_node": "1", "class_type": "LoraLoaderModelOnly"}`。`class_type` の既定は `LoraLoader`;model-only ローダーは model パスのみを扱います(clip なし)。 |
+| `model_slots` | いいえ | ユーザーが設定から差し替えられるローダー入力:`[{"key": "unet", "label": "Base model", "node": "1", "input": "unet_name"}]`。UI は各スロットのエンジンのドロップダウン enum を一覧表示し、選択は `engine_models` 設定に保存され、レンダリング時に入力へ書き込まれます。 |
+| `frame_conditioning` | いいえ | サンプラーが先頭フレーム画像と末尾フレーム画像の両方を受け付ける動画パック:`{"node": "6", "first": "first_frame", "last": "last_frame"}`。ショットレベルの「スチルを先頭/末尾フレームにアンカー」トグルが有効になります — 「last」は先頭入力に与えられるものを末尾入力へ移します。 |
+| `required_models` | いいえ | `"<ClassType>.<input_name>"` → グラフが必要とするモデルファイル名リストのマップ。ComfyUI の `/object_info` enum に対して検証(60 秒キャッシュ);不一致は不足名を一覧してパックを利用不可にします。利用可否チェックは**実効的な**セットに対して行われます:ユーザーの設定でのモデル差し替えは焼き込まれたファイル名を置き換え、ユーザーが OFF にした焼き込み LoRA は必須になりません。 |
+| `required_nodes` | いいえ | グラフが既に参照しているものを超えて追加で要求するノード**クラス名**(めったに不要 — グラフ内の全 `class_type` は自動チェックされます)。不足クラスは「カスタムノード不足」一覧とともにパックを利用不可にし、ユーザーはモデルファイルではなくノードパックが必要だと分かります。 |
+| `license_note` | いいえ | パックの**モデルライセンス**の現実的な注意点についての正直な 1〜2 文 — 領域除外、収益上限、撤回可能な許諾、ハードウェア固定の既定ファイル。パックの設定行とセットアップウィザードのエンジン一覧に小さな警告行として表示されます。クリーンなライセンス(Apache/MIT)では省略;マーケティングには使わないこと。同梱の Krea 2 パック(community license: 収益 $1M 未満、撤回可能)と `minimax-h3-i2v`(US/EU/UK/韓国領域除外 + Blackwell 専用の既定ファイル)に例があります。 |
+| `lora_family` | いいえ | このパックのキャラクター LoRA が属すべき**モデルファミリー** — `"krea2"`、`"z-image"`、`"qwen-image"` のような小文字 slug。キャラクター LoRA はファミリー縛りです(Krea 2 用に学習したものは Z-Image では無効)なので、StoryBored はこの id でレンダリングを事前チェックします:記録されたファミリーがパックと異なるキャラクターを起用したショットは、キューに入る前に明確な 409 で拒否され、ショットドロワーはそのようなエンジンを「キャラクター非対応」と表示します。学習のターゲットでもあります:トレーナーは既定画像エンジンのファミリーの LoRA を作るよう指示されます。ファミリー非依存のパックでは省略 — 省略は「チェックなし」であり、決してブロックではありません。同梱の画像パックは `krea2`(Krea 2 パック両方)、`z-image`、`qwen-image` を宣言しています。 |
+| `prompt_guide` | いいえ | 執筆アシスタントに*あなたのモデル*がどうプロンプトされるべきかを教えます:`{"style": "<1 段落の説明>", "examples": ["<良いプロンプト>", ...]}`(examples は任意、最大 3)。あなたのパックが結果をレンダリングするエンジンであるとき、すべての LLM プロンプト組み立てパス — 強化(Enhance)、脚本/ストーリーモード分解、モーション下書き — に注入されます。不正なガイドはログに記録されて無視され、致命的にはなりません。後述「アシスタントにあなたのモデルのプロンプトスタイルを教える」参照。 |
 
-### Parameter types
+### パラメータ型
 
-| `type` | UI | Notes |
+| `type` | UI | 備考 |
 | --- | --- | --- |
-| `prompt` | the shot's description textarea | `@handles` are replaced with each character's `"{trigger} {class_word}"` before the value is written into the graph. Every image pack should have exactly one. |
-| `seed` | hidden | StoryBored assigns a fresh random seed per take and stores it on the take, so takes are reproducible. |
-| `int` / `float` | number field | Use `default` to pre-fill. |
-| `string` | text field | Free text (e.g. a style suffix). |
-| `image` | hidden (video packs) | StoryBored uploads the shot's approved still via `POST /upload/image` and writes the uploaded name here. |
+| `prompt` | ショットの説明テキストエリア | 値がグラフに書き込まれる前に、`@handles` は各キャラクターの `"{trigger} {class_word}"` に置換されます。すべての画像パックはこれをちょうど 1 つ持つべきです。 |
+| `seed` | 非表示 | StoryBored はテイクごとに新しいランダムシードを割り当ててテイクに保存するため、テイクは再現可能です。 |
+| `int` / `float` | 数値フィールド | `default` で事前入力。 |
+| `string` | テキストフィールド | 自由テキスト(スタイル接尾辞など)。 |
+| `image` | 非表示(動画パック) | StoryBored はショットの承認済みスチルを `POST /upload/image` でアップロードし、アップロード名をここに書き込みます。 |
 
-### Video packs
+### 動画パック
 
-A `kind: "video"` manifest adds two conventional parameters:
+`kind: "video"` のマニフェストは 2 つの慣例的パラメータを追加します:
 
 ```json
 {"key": "first_frame", "type": "image", "node": "5", "input": "image"},
 {"key": "length",      "type": "int",   "node": "6", "input": "length"}
 ```
 
-`first_frame` receives the approved still; `length` is the clip length in
-frames. The shot's `motion_prompt` feeds the pack's `prompt` parameter. See
-`workflows/minimax-h3-i2v/` for the shipped example (LoadImage →
-image-to-video node → sampler → video+audio decode → `SaveVideo`).
+`first_frame` は承認済みスチルを受け取り、`length` はクリップ長(フレーム数)です。
+ショットの `motion_prompt` がパックの `prompt` パラメータに渡されます。
+同梱の例は `workflows/minimax-h3-i2v/` を参照(LoadImage →
+image-to-video ノード → サンプラー → video+audio デコード → `SaveVideo`)。
 
-Video packs can also declare `lora_injection` (users append video LoRAs from
-Settings), `model_slots` (swap the video UNET for a finetune), and
-`frame_conditioning` (let the still anchor the END of the clip instead of the
-start) — see the manifest field table above and the shipped minimax pack,
-which uses all three. Only declare `frame_conditioning` when the graph's
-sampler/latent node **really has** a last-frame input: the shipped Wan 2.2
-packs honestly omit it (their latent nodes take a start image only), so the
-frame-position toggle simply doesn't appear for them. `wan22-i2v-14b` is the
-shipped example of a **dual-expert** graph: two UNETLoaders declared as two
-`model_slots`, two chained `KSamplerAdvanced` passes, one seed parameter on
-the first (noise-adding) sampler.
+動画パックは `lora_injection`(設定から動画 LoRA 追加)、`model_slots`
+(動画 UNET をファインチューンに差し替え)、`frame_conditioning`
+(スチルをクリップの先頭ではなく*末尾*にアンカー)も宣言できます —
+上記のマニフェストフィールド表と、3 つすべてを使う同梱 minimax パックを参照。
+`frame_conditioning` はグラフのサンプラー/latent ノードが**本当に**末尾フレーム入力を
+持つときだけ宣言してください:同梱の Wan 2.2 パックは正直に省略しています
+(latent ノードは開始画像のみ受け付けます)ため、これらにはフレーム位置トグルが
+単に表示されません。`wan22-i2v-14b` は**デュアルエキスパート**グラフの同梱例:
+2 つの UNETLoader を 2 つの `model_slots` として宣言、2 段のチェーンされた
+`KSamplerAdvanced` パス、最初の(ノイズ追加)サンプラーに 1 つのシードパラメータ。
 
-## Character injection, explained
+## キャラクター注入の仕組み
 
-Characters in StoryBored are LoRAs. When a shot mentions `@sam`, the engine
-splices Sam's LoRA into your graph at generation time — your pack just declares
-*where*:
+<a id="character-injection-explained"></a>
+
+StoryBored のキャラクターは LoRA です。ショットが `@sam` に言及すると、生成時に
+エンジンが Sam の LoRA をあなたのグラフにスプライスします — パックは*どこ*かを
+宣言するだけです:
 
 ```json
 "character_injection": {"after_node": "lora_7", "disable_nodes": ["lora_1", "lora_2", "lora_3", "lora_4", "lora_6", "lora_7"]}
 ```
 
-Aesthetic LoRAs (realism, detailer, "beauty" face LoRAs) are trained on their
-own faces and will fight — and often overpower — a character LoRA's identity,
-so `disable_nodes` should list your *entire* aesthetic stack; keep only
-identity-neutral utilities (filter bypass, turbo distill) live with characters.
-The checkpoint shootout renders through this same pack with the same
-exclusions, so its likeness scores measure the character, not the makeup.
+美系 LoRA(実写風、ディテーラー、「美顔」LoRA)は自分の顔で学習されているため、
+キャラクター LoRA の同一性と衝突し — 多くの場合圧倒します — したがって
+`disable_nodes` には美系スタックの*全体*を列挙すべきです;キャラクターと共存させるのは
+同一性に中立なユーティリティ(フィルタバイパス、turbo distill)だけにします。
+チェックポイント選抜テストは同じパックで同じ除外を使ってレンダリングするため、
+その類似スコアはメイクアップではなくキャラクターを測ります。
 
-- **`after_node`** — the node whose MODEL/CLIP outputs the character LoRA
-  should hang off. Usually the *last* `LoraLoader` in your style chain (or the
-  checkpoint/UNET loader if you have no chain). Mechanically, for each shot
-  character the engine:
-  1. inserts a new `LoraLoader` node whose `model`/`clip` inputs point at
-     `[after_node, 0]` / `[after_node, 1]`, with the character's `lora_name`
-     and `lora_strength`;
-  2. rewires every *other* node that referenced `[after_node, 0]` or
-     `[after_node, 1]` to read from the new node instead;
-  3. chains additional characters in sequence (character 2 hangs off
-     character 1's node, and so on).
-- **`disable_nodes`** — node ids whose `strength_model`/`strength_clip` are set
-  to `0` while any character LoRA is active. Use this for style/aesthetic LoRAs
-  that fight trained identities (in the shipped `krea2-realism` pack, two
-  "beauty" LoRAs are disabled whenever a character is in the shot). The nodes
-  stay in the graph, so shots *without* characters keep the full style stack.
+- **`after_node`** — キャラクター LoRA がぶら下がるべき MODEL/CLIP 出力を持つノード。
+  通常はスタイルチェーンの*最後*の `LoraLoader`(チェーンがなければ
+  checkpoint/UNET ローダー)。機械的には、各ショットキャラクターに対してエンジンは:
+  1. 新しい `LoraLoader` ノードを挿入し、その `model`/`clip` 入力を
+     `[after_node, 0]` / `[after_node, 1]` に向け、キャラクターの `lora_name` と
+     `lora_strength` を設定;
+  2. `[after_node, 0]` か `[after_node, 1]` を参照していた他の*すべての*ノードを、
+     新しいノードから読むよう配線し直し;
+  3. 追加キャラクターを順にチェーンします(キャラクター 2 はキャラクター 1 の
+     ノードにぶら下がる、など)。
+- **`disable_nodes`** — キャラクター LoRA が有効な間、`strength_model`/`strength_clip`
+  を `0` にするノード id。学習された同一性と衝突するスタイル/美系 LoRA に使います
+  (同梱の `krea2-realism` パックでは、キャラクターがショットにいるとき 2 つの
+  「美顔」LoRA が無効化されます)。ノードはグラフに残るため、キャラクター*なし*の
+  ショットはフルのスタイルスタックを保ちます。
 
-Prompt side: `@sam` in the description becomes Sam's `"{trigger} {class_word}"`
-(e.g. `"zxsam person"`) before the prompt is written into the graph — the
-trigger token is what the LoRA was trained to respond to.
+プロンプト側:説明内の `@sam` は、プロンプトがグラフに書き込まれる前に Sam の
+`"{trigger} {class_word}"`(例:`"zxsam person"`)になります — trigger トークンは
+LoRA が学習された応答対象です。
 
-**Families.** A character LoRA only works on the model family it was trained
-for. Declare your pack's family with the `lora_family` manifest key (see the
-field table) so StoryBored can refuse — with a useful message instead of a
-garbage render — to splice a Krea 2 character into a Z-Image graph. Characters
-with no recorded family, and packs without the key, are treated as
-family-agnostic: nothing is ever blocked on a missing value.
+**ファミリー。** キャラクター LoRA は学習されたモデルファミリーでしか動きません。
+`lora_family` マニフェストキーでパックのファミリーを宣言すれば(フィールド表参照)、
+StoryBored はゴミレンダリングの代わりに有用なメッセージとともに、Krea 2 キャラクターを
+Z-Image グラフにスプライスすることを拒否できます。ファミリー未記録のキャラクターと
+キーのないパックはファミリー非依存として扱われます:欠損値で何かがブロックされることは
+決してありません。
 
-**Model-only seams.** The mechanics above assume the seam node has both a
-MODEL and a CLIP output (a checkpoint loader or full `LoraLoader` chain). In
-graphs where the text encoder never routes through the LoRA chain — Z-Image
-and Qwen-Image style, where the seam is a bare `UNETLoader` or a
-`LoraLoaderModelOnly` — declare
-`"character_injection": {"after_node": "...", "class_type":
-"LoraLoaderModelOnly"}`. Characters (and style/engine LoRAs, which reuse the
-same seam) then splice as model-only loaders: no `clip` input, no
-`strength_clip`, only output 0 rewired. This is correct for those model
-families — their LoRAs are transformer-only. The import wizard suggests the
-right class automatically from the seam node's type.
+**model-only 接合点。** 上記の機構は、接合ノードが MODEL と CLIP の両方の出力を
+持つ前提です(checkpoint ローダーかフル `LoraLoader` チェーン)。テキストエンコーダが
+LoRA チェーンを経由しないグラフ — Z-Image や Qwen-Image 方式で、接合点が素の
+`UNETLoader` か `LoraLoaderModelOnly` の場合 — は
+`"character_injection": {"after_node": "...", "class_type": "LoraLoaderModelOnly"}`
+を宣言します。キャラクター(と、同じ接合点を再利用するスタイル/エンジン LoRA)は
+model-only ローダーとしてスプライスされます:`clip` 入力なし、`strength_clip` なし、
+出力 0 のみの配線し直し。これはそれらのモデルファミリーでは正しい動作です —
+LoRA は transformer のみに効くためです。読み込みウィザードは接合ノードの型から
+正しいクラスを自動提案します。
 
-## Teach the assistant your model's prompt style (`prompt_guide`)
+## アシスタントにあなたのモデルのプロンプトスタイルを教える(`prompt_guide`)
 
-Every image/video model family has a prompting dialect — some want flowing
-photographic prose, some want terse action lines, some have conventions like a
-trailing `Audio:` sentence. The optional `prompt_guide` manifest key lets your
-pack teach StoryBored's writing assistant that dialect, so *Enhance*, script
-and story-vibes breakdowns, and motion drafts come out written for **your**
-engine instead of a generic one:
+すべての画像/動画モデルファミリーにはプロンプトの方言があります — 流れるような
+写真散文を好むもの、簡潔なアクション行を好むもの、末尾の `Audio:` 文のような
+慣例を持つもの。任意の `prompt_guide` マニフェストキーで、パックが StoryBored の
+執筆アシスタントにその方言を教えられるため、*強化(Enhance)*、脚本/ストーリーモード分解、
+モーション下書きが、汎用ではなく**あなたの**エンジン向けに書かれるようになります:
 
 ```json
 "prompt_guide": {
@@ -257,73 +253,68 @@ engine instead of a generic one:
 }
 ```
 
-- **`style`** (required) — one paragraph, written as instructions to a prompt
-  writer. Say what to include, in what shape, and what to avoid.
-- **`examples`** (optional, max 3) — finished prompts in the target style.
-  One or two strong examples beat three mediocre ones; they are pasted into
-  the system prompt verbatim, so keep them short and self-contained.
+- **`style`**(必須)— プロンプト作成者への指示として書かれた 1 段落。含めるもの、
+  その形、避けるべきものを述べます。
+- **`examples`**(任意、最大 3)— 対象スタイルの完成プロンプト。3 つの凡庸な例より
+  1〜2 個の強い例が勝ります。システムプロンプトにそのまま貼り付けるため、短く
+  自己完結的に保ってください。
 
-The guide is injected as a clearly delimited section of the assistant's system
-prompt whenever your pack is the engine that will actually render: the engine
-selected in the shot drawer, or the configured default image/video workflow.
-Packs without a guide simply get the generic prompting rules — nothing breaks.
-A malformed guide is logged and ignored at load (`validate-pack` warns about
-the exact problem), so it can never sink an otherwise working pack.
+ガイドは、あなたのパックが実際にレンダリングするエンジンであるとき — ショット
+ドロワーで選択されたエンジン、または設定された既定画像/動画ワークフロー — アシスタントの
+システムプロンプトの明確に区切られたセクションとして注入されます。ガイドのないパックは
+単に汎用のプロンプト規則を得ます — 何も壊れません。不正なガイドはロード時に
+ログ記録されて無視され(`validate-pack` は具体的な問題を警告)、動いているパックを
+沈めることは決してありません。
 
-The shipped packs carry guides you can crib from: the Krea 2, Z-Image and
-Qwen-Image packs describe photographic-prose stills prompting (Qwen's adds
-its verbatim-text-rendering convention), the Wan 2.2 packs describe silent
-motion-prose, and `minimax-h3-i2v` describes motion-prose with its `Audio:`
-line convention.
+同梱パックには参考にできるガイドがあります:Krea 2、Z-Image、Qwen-Image パックは
+写真散文によるスチルプロンプティングを説明し(Qwen はその verbatim テキストレンダリング
+慣例を追加)、Wan 2.2 パックは無音のモーション散文を、`minimax-h3-i2v` は
+`Audio:` 行の慣例付きモーション散文を説明します。
 
-## Runtime LoRA layers: what users can change without touching your pack
+## 実行時 LoRA レイヤー:パックに触れずにユーザーが変えられるもの
 
-Your pack's files are never edited by the app. Instead, Settings stores three
-JSON settings that are applied to the graph at render time, so users can tune
-an engine from the UI and always get back to your defaults with one click:
+アプリがパックのファイルを編集することは決してありません。代わりに、設定が 3 つの
+JSON 設定を保存し、それがレンダリング時にグラフへ適用されるため、ユーザーは UI から
+エンジンを調整し、ワンクリックであなたの既定に戻れます:
 
-- **Per-engine edits** (Settings → Engines → expand a row): every `LoraLoader`
-  in your graph is listed in chain order with its strength. Users can toggle
-  any of them off (both strengths forced to 0 — render-identical to removing
-  the node), change strengths, or **append** extra LoRAs to the engine. Stored
-  in the `engine_loras` setting keyed by pack id; overrides reference your
-  node ids, so renaming a node in a pack update simply makes stale overrides
-  inert (unknown ids are ignored, never fatal).
-- **Style LoRAs** (Settings → Style LoRAs): a global list layered into *every*
-  image render regardless of engine, each with its own on/off toggle and
-  strength. Stored in the `style_loras` setting.
-- **Model swaps** (Settings → Engines → expand a row → Model): each
-  `model_slots` entry becomes a dropdown of the engine's installed files, so
-  users can run your pack on a different base model or finetune. Stored in the
-  `engine_models` setting keyed by pack id; unknown slot keys are ignored,
-  never fatal.
+- **エンジンごとの編集**(設定 → エンジン → 行を展開):グラフ内の全 `LoraLoader`
+  がチェーン順に強度つきで一覧表示されます。ユーザーはどれでも OFF にでき
+  (両強度が 0 に強制され — ノード削除とレンダリング結果は同一)、強度を変更でき、
+  エンジンへ追加 LoRA を**追加**できます。`engine_loras` 設定にパック id キーで保存;
+  オーバーライドはあなたのノード id を参照するため、パック更新でのノード名変更は単に
+  古いオーバーライドを無効化します(不明 id は無視され、致命的ではありません)。
+- **スタイル LoRA**(設定 → スタイル LoRA):エンジンに関係なく*すべての*画像
+  レンダリングに重ねられるグローバルリストで、各項目に ON/OFF トグルと強度があります。
+  `style_loras` 設定に保存されます。
+- **モデル差し替え**(設定 → エンジン → 行を展開 → モデル):各 `model_slots` エントリが
+  エンジンのインストール済みファイルのドロップダウンになり、別のベースモデルや
+  ファインチューンでパックを実行できます。`engine_models` 設定にパック id キーで保存;
+  不明なスロットキーは無視され、致命的ではありません。
 
-Both kinds of extra LoRA splice into the graph at your
-`character_injection.after_node` — the same seam characters use (packs without
-characters, e.g. video packs, declare the seam as `lora_injection` instead).
-The final chain order is always:
+両種類の追加 LoRA は、あなたの `character_injection.after_node` — キャラクターが使うのと
+同じ接合点 — でグラフにスプライスされます(キャラクターのないパック、例えば動画パックは、
+代わりに `lora_injection` で接合点を宣言します)。最終チェーン順は常に:
 
 ```
-your baked stack → engine additions → style LoRAs → character LoRAs → sampler
+あなたの焼き込みスタック → エンジン追加 → スタイル LoRA → キャラクター LoRA → サンプラー
 ```
 
-Character LoRAs come last on purpose: identity wins over style. Two
-consequences for pack authors:
+キャラクター LoRA が最後なのは意図的です:同一性がスタイルに勝つ。パック作者への
+2 つの帰結:
 
-1. `after_node` is the seam for *all* runtime LoRA insertion, not just
-   characters — put it after the last LoRA you ship, even in a pack that
-   doesn't target characters.
-2. A pack without `character_injection` still gets per-node strength/off
-   overrides, but users can't append LoRAs to it unless it declares a
-   `lora_injection` seam of its own.
+1. `after_node` は*すべての*実行時 LoRA 挿入の接合点であり、キャラクター限定では
+   ありません — キャラクターを狙わないパックでも、同梱する最後の LoRA の後に置きます。
+2. `character_injection` のないパックでもノードごとの強度/OFF オーバーライドは
+   得られますが、独自の `lora_injection` 接合点を宣言しない限りユーザーは LoRA を
+   追加できません。
 
-The Engines list also marks which pack is the **default** per kind (used
-whenever a shot doesn't pick an engine explicitly) and lets users change it —
-backed by the `default_image_workflow` / `default_video_workflow` settings.
+エンジン一覧はどのパックが種別ごとの**既定**か(ショットが明示的にエンジンを選ばないとき
+使われる)も表示し、ユーザーは変更できます — `default_image_workflow` /
+`default_video_workflow` 設定に裏付けられています。
 
-## Worked example: packaging your own txt2img workflow
+## 実例:独自の txt2img ワークフローをパッケージする
 
-Say you have a plain SDXL-style workflow you like. Export it in API format:
+好きな普通の SDXL 方式ワークフローがあるとします。API 形式で書き出します:
 
 ```json
 {
@@ -347,9 +338,9 @@ Say you have a plain SDXL-style workflow you like. Export it in API format:
 }
 ```
 
-Reading the graph: prompt = node `"2"` input `text`; seed = node `"5"` input
-`seed`; size = node `"4"`; output = node `"7"`; characters should hang off the
-checkpoint loader, node `"1"`. So:
+グラフの読み方:プロンプト = ノード `"2"` の入力 `text`;シード = ノード `"5"` の入力
+`seed`;サイズ = ノード `"4"`;出力 = ノード `"7"`;キャラクターは checkpoint ローダー、
+ノード `"1"` にぶら下がるべき。よって:
 
 ```json
 {
@@ -372,14 +363,14 @@ checkpoint loader, node `"1"`. So:
 }
 ```
 
-Put both files in `DATA_DIR/workflows/my-sdxl/`, refresh Settings → the pack
-shows up, availability-checked against your ComfyUI. That's the whole process.
+両ファイルを `DATA_DIR/workflows/my-sdxl/` に置き、設定を更新すると — パックが表示され、
+あなたの ComfyUI に対して利用可否チェックされます。これが全工程です。
 
-## Validating a pack (`validate-pack`)
+## パックの検証(`validate-pack`)
 
-Don't hand-check the list below — the repo ships an offline linter that does
-it, including deriving `required_models` straight from your graph's loader
-nodes so you never transcribe filenames by hand:
+下のリストを目視確認しないでください — リポジトリはそれを行うオフライン linter を
+同梱しており、グラフのローダーノードから直接 `required_models` を導出するため、
+ファイル名を手作業で転記する必要もありません:
 
 ```bash
 python -m storybored validate-pack workflows/my-pack          # check
@@ -387,74 +378,75 @@ python -m storybored validate-pack workflows/my-pack --write  # + fix required_m
 python -m storybored validate-pack workflows/*/               # CI: all packs
 ```
 
-It needs no ComfyUI and checks, per pack:
+ComfyUI 不要で、パックごとに以下をチェックします:
 
-- the manifest parses and has a sane shape (`id` matches the folder name,
-  `kind` is image/video, parameter types are known, no duplicate keys);
-- the graph is really **API format**, and every node id the manifest references
-  (`parameters`, `output_node`, `model_slots`, `character_injection`,
-  `lora_injection`, `frame_conditioning`) exists in it;
-- `required_models` matches what the graph's loader nodes actually load
-  (`UNETLoader`, `CLIPLoader`, `DualCLIPLoader`, `VAELoader`, `LoraLoader`,
-  `LoraLoaderModelOnly`, `CheckpointLoaderSimple`). Any mismatch is reported as
-  `DRIFT`; `--write` regenerates the manifest section from the graph. Files
-  loaded by custom node classes can't be derived offline — a `WARN` points at
-  likely candidates and you list those by hand.
+- マニフェストが解析でき、まともな形状(`id` がフォルダ名と一致、`kind` は
+  image/video、パラメータ型が既知、キー重複なし);
+- グラフが本当に **API 形式**であり、マニフェストが参照する全ノード id
+  (`parameters`、`output_node`、`model_slots`、`character_injection`、
+  `lora_injection`、`frame_conditioning`)がグラフ内に存在;
+- `required_models` がグラフのローダーノードが実際にロードするものと一致
+  (`UNETLoader`、`CLIPLoader`、`DualCLIPLoader`、`VAELoader`、`LoraLoader`、
+  `LoraLoaderModelOnly`、`CheckpointLoaderSimple`)。不一致は `DRIFT` として報告され;
+  `--write` はマニフェストの該当セクションをグラフから再生成します。カスタムノード
+  クラスがロードするファイルはオフラインで導出できません — `WARN` が有力候補を指し、
+  それらは手動で列挙します。
 
-Exit codes: `0` all packs valid, `1` validation errors or drift (CI should
-fail), `2` usage/IO problems.
+終了コード:`0` 全パック有効、`1` 検証エラーまたは drift(CI は失敗すべき)、
+`2` 使用法/IO の問題。
 
-## Custom nodes: what availability checks, and what the shipped packs need
+## カスタムノード:利用可否チェックの対象と同梱パックの必要物
 
-Availability isn't only about model files. StoryBored also checks **every node
-class your graph uses** against the engine's `/object_info`; classes the
-engine doesn't know are listed as *missing custom nodes* in Settings, so users
-learn they need a node pack (or a newer ComfyUI), not a download. The optional
-manifest `required_nodes` list adds classes beyond those the graph references.
+<a id="custom-nodes-what-availability-checks-and-what-the-shipped-packs-need"></a>
 
-The shipped packs assume:
+利用可否はモデルファイルだけの話ではありません。StoryBored はグラフが使う
+**全ノードクラス**をエンジンの `/object_info` に対してもチェックし、エンジンが知らない
+クラスは設定に*カスタムノード不足*として一覧されるため、ユーザーはダウンロードではなく
+ノードパック(または新しい ComfyUI)が必要だと分かります。任意のマニフェスト
+`required_nodes` リストは、グラフが参照するものを超えたクラスを追加します。
 
-- `PathchSageAttentionKJ` (the typo is the real class name) — from the
-  **ComfyUI-KJNodes** custom node pack (registry name `comfyui-kjnodes`),
-  which additionally requires the `sageattention` Python library installed in
-  ComfyUI's environment. Used by `krea2-basic` and `krea2-realism`.
-- `MiniMaxH3MemoryEfficientSageAttentionPatch` — also from **ComfyUI-KJNodes**
-  (experimental; needs a recent `sageattention`). Used by `minimax-h3-i2v`.
-- `MiniMaxH3ImageToVideo` — **ComfyUI core**, but only in recent builds
-  (ComfyUI ≥ 0.30.0 per the official MiniMax H3 example page). An older
-  ComfyUI reports it missing exactly like an uninstalled node pack.
-- `CreateVideo`, `SaveVideo`, `VAEDecodeAudio` — ComfyUI core video/audio
-  nodes (present since the video-type support added in spring 2025).
+同梱パックの前提:
 
-The four tier-recommended packs need **no custom nodes at all** — every class
-they use is ComfyUI core, with these version floors:
+- `PathchSageAttentionKJ`(typo が実際のクラス名)— **ComfyUI-KJNodes** カスタム
+  ノードパック(registry 名 `comfyui-kjnodes`)から。追加で ComfyUI の環境に
+  `sageattention` Python ライブラリのインストールが必要。`krea2-basic` と
+  `krea2-realism` が使用。
+- `MiniMaxH3MemoryEfficientSageAttentionPatch` — 同じく **ComfyUI-KJNodes** から
+  (実験的;最近の `sageattention` が必要)。`minimax-h3-i2v` が使用。
+- `MiniMaxH3ImageToVideo` — **ComfyUI コア**だが最近のビルドのみ(公式 MiniMax H3
+  例ページによれば ComfyUI ≥ 0.30.0)。古い ComfyUI は未インストールのノードパックと
+  同じように欠損を報告します。
+- `CreateVideo`、`SaveVideo`、`VAEDecodeAudio` — ComfyUI コアの動画/音声ノード
+  (2025 年春に追加された動画型サポート以降に存在)。
 
-- `z-image-turbo` — Z-Image support (`ModelSamplingAuraFlow` with the
-  `lumina2` CLIP type) is core since **ComfyUI 0.3.75**.
-- `qwen-image-2512` — Qwen-Image support (`qwen_image` CLIP type) is core
-  since **ComfyUI 0.3.49**.
+ティア推奨の 4 パックは**カスタムノードを一切必要としません** — 使用する全クラスが
+ComfyUI コアで、次のバージョン下限があります:
+
+- `z-image-turbo` — Z-Image サポート(`lumina2` CLIP 型の
+  `ModelSamplingAuraFlow`)は **ComfyUI 0.3.75** 以降コア。
+- `qwen-image-2512` — Qwen-Image サポート(`qwen_image` CLIP 型)は
+  **ComfyUI 0.3.49** 以降コア。
 - `wan22-ti2v-5b` / `wan22-i2v-14b` — `Wan22ImageToVideoLatent` /
-  `WanImageToVideo` are core since the Wan 2.2 release (summer 2025). An
-  older ComfyUI reports them missing exactly like an uninstalled node pack.
+  `WanImageToVideo` は Wan 2.2 リリース(2025 年夏)以降コア。古い ComfyUI は
+  未インストールのノードパックと同じように欠損を報告します。
 
-## Checklist before sharing a pack
+## パック共有前のチェックリスト
 
-`python -m storybored validate-pack <dir>` checks everything here except the
-last item automatically:
+`python -m storybored validate-pack <dir>` は最後の項目以外を自動チェックします:
 
-- [ ] `graph.json` is **API format** (top-level keys are node ids, not a
-      `nodes` array).
-- [ ] Manifest `id` matches the folder name; every `parameters[].node` /
-      `input` exists in the graph.
-- [ ] `output_node` is the save node; leave its `filename_prefix` as-is
-      (StoryBored overwrites it per take).
-- [ ] `required_models` covers every model file the graph loads (run
-      `validate-pack --write` to generate it) — this is what gives users a
-      useful "missing: …" message instead of a cryptic ComfyUI error.
-- [ ] `character_injection.after_node` points at the *last* LoRA in your chain —
-      it's the seam for characters, style LoRAs, and user-appended LoRAs alike
-      (see "Runtime LoRA layers" above).
-- [ ] `lora_family` declares the model family if trained character LoRAs should
-      work with this pack (and be guarded against the wrong family) — omit it
-      only for genuinely family-agnostic graphs.
-- [ ] No absolute paths, hostnames, or personal LoRA names in either file.
+- [ ] `graph.json` が **API 形式**(トップレベルキーはノード id であり、
+      `nodes` 配列ではない)。
+- [ ] マニフェストの `id` がフォルダ名と一致;全 `parameters[].node` /
+      `input` がグラフ内に存在。
+- [ ] `output_node` は save ノード;その `filename_prefix` はそのまま
+      (StoryBored がテイクごとに上書き)。
+- [ ] `required_models` がグラフがロードする全モデルファイルをカバー
+      (`validate-pack --write` で生成)— これがあるからユーザーは暗号のような
+      ComfyUI エラーではなく有用な「missing: …」メッセージを得られます。
+- [ ] `character_injection.after_node` はチェーンの*最後*の LoRA を指す —
+      キャラクター、スタイル LoRA、ユーザー追加 LoRA すべての接合点です
+      (上記「実行時 LoRA レイヤー」参照)。
+- [ ] 学習済みキャラクター LoRA がこのパックで動くべき(そして誤ファミリーを
+      ガードされるべき)なら `lora_family` でモデルファミリーを宣言 — 本当に
+      ファミリー非依存のグラフでのみ省略。
+- [ ] 両ファイルに絶対パス、ホスト名、個人的な LoRA 名がない。

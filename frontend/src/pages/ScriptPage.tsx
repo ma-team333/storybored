@@ -59,7 +59,7 @@ export function ScriptPage() {
       }),
     onSuccess: (d) => {
       if (!d?.scenes?.length) {
-        toast("The draft came back empty — try a longer script excerpt.", "info");
+        toast("下書きが空でした — より長い脚本の抜粋でお試しください。", "info");
         return;
       }
       setDraft(d);
@@ -76,7 +76,7 @@ export function ScriptPage() {
       apiPost(`/api/projects/${projectId}/apply-breakdown`, { draft: d }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["project", projectId] });
-      toast("Added to your board.", "success");
+      toast("ボードに追加しました。", "success");
       navigate(`/p/${projectId}`);
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -122,12 +122,12 @@ export function ScriptPage() {
         <Link
           to={`/p/${projectId}`}
           className="rounded-md p-1.5 text-fog hover:text-paper"
-          title="Back to board"
+          title="ボードに戻る"
         >
           <ArrowLeft size={17} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Import script</h1>
+          <h1 className="text-xl font-semibold tracking-tight">脚本の読み込み</h1>
           <p className="text-xs text-fog">{project?.title ?? "…"}</p>
         </div>
       </div>
@@ -135,11 +135,11 @@ export function ScriptPage() {
       {llmUnconfigured ? (
         <EmptyState
           icon={Wand2}
-          title="Script breakdown needs a writing assistant"
-          body="Connect a language model in Settings and StoryBored will draft your scene and shot list automatically. You can still build the board by hand."
+          title="脚本分解には文章生成 AI が必要です"
+          body="設定 で言語モデルに接続すると、シーンとショットの一覧を自動で下書きします。手動でボードを作ることもできます。"
           action={
             <Link to="/settings">
-              <Button variant="primary">Open Settings</Button>
+              <Button variant="primary">設定を開く</Button>
             </Link>
           }
         />
@@ -148,8 +148,8 @@ export function ScriptPage() {
           <div className="flex gap-1 rounded-lg border border-line bg-ink-900 p-1 text-sm w-fit">
             {(
               [
-                ["script", "Screenplay"],
-                ["vibes", "Story vibes"],
+                ["script", "脚本"],
+                ["vibes", "ストーリーモード"],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -166,11 +166,11 @@ export function ScriptPage() {
             ))}
           </div>
           <Field
-            label={mode === "script" ? "Script" : "Your story"}
+            label={mode === "script" ? "脚本" : "あなたのストーリー"}
             hint={
               mode === "script"
-                ? "Paste a scene, a few pages, or the whole thing — StoryBored drafts scenes and shots for you to review."
-                : "Just tell the story in your own words — StoryBored invents the scenes, coverage, and render-ready shot prompts."
+                ? "シーン単位、数ページ、全体のいずれでも貼り付けできます — StoryBored がシーンとショットを下書きし、確認用に用意します。"
+                : "自分の言葉でストーリーを語ってください — StoryBored がシーン、カバレッジ、レンダリング可能なショットプロンプトを作成します。"
             }
           >
             <TextArea
@@ -190,8 +190,8 @@ export function ScriptPage() {
               <span className="flex items-center gap-2 text-sm text-fog">
                 <Spinner size={14} />
                 {mode === "script"
-                  ? "Reading your script — this can take a minute…"
-                  : "Directing your story — this can take a minute…"}
+                  ? "脚本を読み込み中 — 1 分ほどかかることがあります…"
+                  : "ストーリーを演出中 — 1 分ほどかかることがあります…"}
               </span>
             )}
             <Button
@@ -200,7 +200,7 @@ export function ScriptPage() {
               busy={breakdown.isPending}
               onClick={() => breakdown.mutate()}
             >
-              <Sparkles size={14} /> {mode === "script" ? "Break it down" : "Board it"}
+              <Sparkles size={14} /> {mode === "script" ? "脚本分解" : "絵コンテにする"}
             </Button>
           </div>
         </div>
@@ -208,8 +208,7 @@ export function ScriptPage() {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-fog">
-              This is a draft — untick anything you don't want, edit inline, then add it to
-              your board.
+              これは下書きです — 不要な項目のチェックを外し、その場で編集してからボードに追加してください。
             </p>
             <Button
               variant="ghost"
@@ -218,7 +217,7 @@ export function ScriptPage() {
                 setChecked(null);
               }}
             >
-              Start over
+              やり直す
             </Button>
           </div>
 
@@ -314,7 +313,7 @@ export function ScriptPage() {
 
           <div className="flex items-center justify-end gap-3 pb-8">
             <span className="text-sm text-fog">
-              {selectedCount} shot{selectedCount === 1 ? "" : "s"} selected
+              {selectedCount} ショットを選択中
             </span>
             <Button
               variant="primary"
@@ -322,7 +321,7 @@ export function ScriptPage() {
               busy={apply.isPending}
               onClick={() => checked && apply.mutate(filterDraft(draft, checked))}
             >
-              <FileText size={14} /> Add to board
+              <FileText size={14} /> ボードに追加
             </Button>
           </div>
         </div>

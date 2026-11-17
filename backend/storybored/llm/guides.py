@@ -64,6 +64,9 @@ def guide_block(guide: dict | None) -> str:
         f"=== ACTIVE RENDER ENGINE: {guide['engine']} ===",
         "The prompt will be rendered by this engine. How it wants to be prompted:",
         guide["style"],
+        "LANGUAGE: follow these style notes, but always write your output text "
+        "in Japanese. Never translate @handle tokens or fixed English markers "
+        '(JSON keys, the "Audio:" prefix) — keep them exactly as specified.',
     ]
     if guide["examples"]:
         lines.append("Example prompts in this engine's preferred style:")

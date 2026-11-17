@@ -1,21 +1,21 @@
 {
   "id": "krea2-realism",
-  "name": "Krea 2 — Realism stack",
+  "name": "Krea 2 — リアリズムスタック",
   "kind": "image",
   "lora_family": "krea2",
-  "description": "8-step turbo-distilled Krea 2 with a community realism LoRA stack: filter bypass, realism, detailer, snapshot and realism-engine LoRAs chained for photographic stills.",
+  "description": "8 ステップのターボ蒸留 Krea 2 にコミュニティ製リアリズム LoRA スタックを組み合わせた構成。フィルターバイパス・リアリズム・ディテーラー・スナップショット・リアリズムエンジンの各 LoRA を連結して写真のようなスチルを作る。",
   "license_note": "Krea 2 Community License: commercial use only below $1M trailing-12-month revenue, and the license is revocable on 30 days notice. Fully open alternatives: the Z-Image and Qwen-Image engines (Apache 2.0).",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "seed", "label": "Seed", "type": "seed", "node": "3", "input": "seed"},
-    {"key": "width", "label": "Width", "type": "int", "node": "5", "input": "width", "default": 1728},
-    {"key": "height", "label": "Height", "type": "int", "node": "5", "input": "height", "default": 1152},
-    {"key": "steps", "label": "Steps", "type": "int", "node": "3", "input": "steps", "default": 8}
+    {"key": "prompt", "label": "プロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "seed", "label": "シード", "type": "seed", "node": "3", "input": "seed"},
+    {"key": "width", "label": "幅", "type": "int", "node": "5", "input": "width", "default": 1728},
+    {"key": "height", "label": "高さ", "type": "int", "node": "5", "input": "height", "default": 1152},
+    {"key": "steps", "label": "ステップ数", "type": "int", "node": "3", "input": "steps", "default": 8}
   ],
   "output_node": "9",
   "model_slots": [
-    {"key": "unet", "label": "Base model", "node": "4", "input": "unet_name"}
+    {"key": "unet", "label": "ベースモデル", "node": "4", "input": "unet_name"}
   ],
   "character_injection": {
     "after_node": "lora_7",

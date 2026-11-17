@@ -1,21 +1,21 @@
 {
   "id": "wan22-ti2v-5b",
-  "name": "Wan 2.2 — 5B Image to Video",
+  "name": "Wan 2.2 — 5B 画像から動画",
   "kind": "video",
   "offload_friendly": true,
-  "description": "Wan 2.2 TI2V-5B (fp16, Apache 2.0): animates an approved still into a ~5 s silent clip at 720p/24 fps. The lightest video engine — fits 8 GB-class cards with ComfyUI's native offloading. 20-step uni_pc sampling; no audio is generated.",
+  "description": "Wan 2.2 TI2V-5B (fp16、Apache 2.0):承認済みスチルを 720p/24fps の無音クリップ約 5 秒にアニメーション化。最も軽い動画エンジンで、ComfyUI のネイティブオフロードにより 8 GB クラスの GPU でも動作。20 ステップの uni_pc サンプリング。音声は生成しない。",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Motion prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "first_frame", "label": "First frame", "type": "image", "node": "5", "input": "image"},
-    {"key": "length", "label": "Length (frames, 24fps)", "type": "int", "node": "8", "input": "length", "default": 121},
-    {"key": "width", "label": "Width", "type": "int", "node": "8", "input": "width", "default": 1280},
-    {"key": "height", "label": "Height", "type": "int", "node": "8", "input": "height", "default": 704},
+    {"key": "prompt", "label": "モーションプロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "first_frame", "label": "先頭フレーム", "type": "image", "node": "5", "input": "image"},
+    {"key": "length", "label": "長さ(フレーム数、24fps)", "type": "int", "node": "8", "input": "length", "default": 121},
+    {"key": "width", "label": "幅", "type": "int", "node": "8", "input": "width", "default": 1280},
+    {"key": "height", "label": "高さ", "type": "int", "node": "8", "input": "height", "default": 704},
     {"key": "seed", "type": "seed", "node": "9", "input": "seed"}
   ],
   "output_node": "12",
   "model_slots": [
-    {"key": "unet", "label": "Video model", "node": "1", "input": "unet_name"}
+    {"key": "unet", "label": "動画モデル", "node": "1", "input": "unet_name"}
   ],
   "lora_injection": {"after_node": "1", "class_type": "LoraLoaderModelOnly"},
   "required_models": {

@@ -3,18 +3,18 @@
   "name": "Qwen-Image 2512",
   "kind": "image",
   "lora_family": "qwen-image",
-  "description": "Qwen-Image 2512 (fp8) with the Lightning 8-step LoRA baked in: best-in-class open photoreal humans and text rendering, entire stack Apache 2.0. Around 31 GB of downloads — wants a 24 GB card. Without the Lightning LoRA the model runs 20 steps at cfg 2.5.",
+  "description": "Lightning 8 ステップ LoRA を組み込み済みの Qwen-Image 2512 (fp8)。オープンソース最高水準の写実的人物と文字描画が強みで、スタック全体が Apache 2.0。ダウンロードは約 31 GB で 24 GB クラスの GPU を推奨。Lightning LoRA を外すと 20 ステップ・cfg 2.5 で動作する。",
   "graph": "graph.json",
   "parameters": [
-    {"key": "prompt", "label": "Prompt", "type": "prompt", "node": "6", "input": "text"},
-    {"key": "seed", "label": "Seed", "type": "seed", "node": "3", "input": "seed"},
-    {"key": "width", "label": "Width", "type": "int", "node": "5", "input": "width", "default": 1328},
-    {"key": "height", "label": "Height", "type": "int", "node": "5", "input": "height", "default": 1328},
-    {"key": "steps", "label": "Steps", "type": "int", "node": "3", "input": "steps", "default": 8}
+    {"key": "prompt", "label": "プロンプト", "type": "prompt", "node": "6", "input": "text"},
+    {"key": "seed", "label": "シード", "type": "seed", "node": "3", "input": "seed"},
+    {"key": "width", "label": "幅", "type": "int", "node": "5", "input": "width", "default": 1328},
+    {"key": "height", "label": "高さ", "type": "int", "node": "5", "input": "height", "default": 1328},
+    {"key": "steps", "label": "ステップ数", "type": "int", "node": "3", "input": "steps", "default": 8}
   ],
   "output_node": "9",
   "model_slots": [
-    {"key": "unet", "label": "Base model", "node": "4", "input": "unet_name"}
+    {"key": "unet", "label": "ベースモデル", "node": "4", "input": "unet_name"}
   ],
   "character_injection": {
     "after_node": "lora_lightning",

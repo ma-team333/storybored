@@ -37,7 +37,7 @@ export function Modal({
           <button
             onClick={onClose}
             className="rounded p-1 text-fog hover:text-paper"
-            aria-label="Close"
+            aria-label="閉じる"
           >
             <X size={16} />
           </button>

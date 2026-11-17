@@ -9,11 +9,12 @@ import { useToast } from "../lib/toast";
 
 const ACTIVE = new Set(["queued", "running"]);
 
-function timeAgoish(job: Job): string {
-  if (job.status === "running") return "running";
-  if (job.status === "queued") return "waiting";
-  return job.status;
-}
+const STATUS_LABEL: Record<string, string> = {
+  queued: "待機中",
+  running: "実行中",
+  failed: "失敗",
+  done: "完了",
+};
 
 export function JobTray() {
   const [open, setOpen] = useState(false);
@@ -54,12 +55,12 @@ export function JobTray() {
         <div className="sb-fade-in w-80 overflow-hidden rounded-xl border border-line-bright bg-ink-850/95 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-wider text-fog">
-              Activity
+              アクティビティ
             </span>
             <button
               onClick={() => setOpen(false)}
               className="rounded p-0.5 text-fog hover:text-paper"
-              aria-label="Collapse"
+              aria-label="折りたたむ"
             >
               <ChevronDown size={15} />
             </button>
@@ -67,7 +68,7 @@ export function JobTray() {
           <div className="max-h-80 overflow-y-auto p-2">
             {active.length === 0 && recent.length === 0 && (
               <p className="px-2 py-4 text-center text-sm text-fog">
-                Nothing in the queue.
+                待機中のジョブはありません。
               </p>
             )}
             {active.map((j) => (
@@ -77,11 +78,13 @@ export function JobTray() {
                     {jobTypeLabel(j.type)}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-fog">{timeAgoish(j)}</span>
+                    <span className="text-[11px] text-fog">
+                      {STATUS_LABEL[j.status] ?? j.status}
+                    </span>
                     <button
                       onClick={() => cancel.mutate(j.id)}
                       className="rounded p-0.5 text-fog hover:text-status-failed"
-                      title="Cancel"
+                      title="キャンセル"
                     >
                       <XCircle size={14} />
                     </button>
@@ -99,7 +102,7 @@ export function JobTray() {
             ))}
             {recent.length > 0 && (
               <p className="px-2.5 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-fog/70">
-                Recent
+                最近のジョブ
               </p>
             )}
             {recent.map((j) => (
@@ -115,7 +118,7 @@ export function JobTray() {
                   }`}
                   title={j.error ?? undefined}
                 >
-                  {j.status}
+                  {STATUS_LABEL[j.status] ?? j.status}
                 </span>
               </div>
             ))}
@@ -131,8 +134,8 @@ export function JobTray() {
         <ListVideo size={15} className={active.length ? "text-amber-450" : "text-fog"} />
         <span className="text-sm font-medium text-paper">
           {active.length > 0
-            ? `${active.length} job${active.length > 1 ? "s" : ""}`
-            : "Queue"}
+            ? `${active.length} 件のジョブ`
+            : "キュー"}
         </span>
         {active.some((j) => j.status === "running") && (
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-450" />

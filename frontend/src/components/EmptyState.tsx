@@ -30,8 +30,8 @@ export function EmptyState({
 }
 
 export function ErrorState({
-  title = "Can't reach the StoryBored server",
-  body = "Check that the server is running, then try again.",
+  title = "StoryBored サーバーに接続できません",
+  body = "サーバーが起動しているか確認してから、もう一度お試しください。",
   onRetry,
 }: {
   title?: string;
@@ -48,7 +48,7 @@ export function ErrorState({
           onClick={onRetry}
           className="mt-1 h-8 rounded-md border border-line-bright px-3 text-sm text-mist hover:text-paper"
         >
-          Try again
+          再試行
         </button>
       )}
     </div>

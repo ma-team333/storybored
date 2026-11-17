@@ -1,196 +1,183 @@
-# Training characters
+# キャラクターの学習
 
-A **character** in StoryBored is a LoRA plus a little metadata: a display name,
-an `@handle` you type in shot descriptions, a **trigger token** the LoRA
-answers to, a class word ("person", "dog", "robot"…), and a strength. You can
-get one two ways:
+StoryBored の**キャラクター**は LoRA と少しのメタデータです:表示名、ショットの説明に
+入力する `@handle`、LoRA が応答する**トリガートークン**、クラス語("person"、"dog"、
+"robot"…)、そして強度。入手方法は 2 つあります:
 
-- **Import an existing LoRA** — Characters → New character → *Import existing
-  LoRA*. Pick one your ComfyUI already knows about, or upload a
-  `.safetensors` file (requires a LoRA folder — Settings → "LoRA folder", or
-  `COMFY_LORAS_DIR` in `.env` — so StoryBored can copy it where ComfyUI
-  looks). Set the trigger yourself — it's whatever the LoRA was trained with.
-- **Train from photos** — the wizard described below. Requires a trainer
-  (see [Prerequisites](#prerequisites)).
+- **既存の LoRA を読み込む** — キャラクター → 新規キャラクター → *既存 LoRA を読み込む*。
+  ComfyUI が既に知っているものを選ぶか、`.safetensors` ファイルをアップロードします
+  (LoRA フォルダが必要です — 設定 →「LoRA フォルダ」、または `.env` の
+  `COMFY_LORAS_DIR` — StoryBored が ComfyUI の探索先へコピーできるように)。
+  トリガーは自分で設定します — LoRA が学習時に使ったものが何であれ、それです。
+- **写真から学習** — 後述のウィザード。トレーナーが必要です
+  ([前提条件](#前提条件) 参照)。
 
-## Consent first
+## まず同意
 
-If you're training on a **real person**, get their explicit consent before you
-collect a single photo — and honor it if they later change their mind (delete
-the dataset *and* the trained LoRA). Don't train on photos of strangers,
-public figures, or anyone who hasn't agreed. For fictional characters, use
-images you have the rights to. StoryBored won't police this for you; it's on
-you.
+**実在の人物**で学習するなら、1 枚の写真を集める前に本人の明示的な同意を得てください —
+そして後で気が変わったらそれを尊重してください(データセット*と*学習済み LoRA を
+削除)。他人、公人、同意していない人の写真で学習しないでください。架空のキャラクターに
+は、権利を持つ画像を使ってください。StoryBored はこれを取り締まりません;あなたの
+責任です。
 
-## Model families
+## モデルファミリー
 
-A character LoRA is **bound to the model family it was trained on**: one
-trained for Krea 2 is inert on Z-Image or Qwen-Image (different transformer,
-different weight shapes — the file loads, the face never appears). StoryBored
-tracks the family end to end so you find that out before a render, not after:
+キャラクター LoRA は**学習されたモデルファミリーに縛られます**:Krea 2 用に学習した
+ものは Z-Image や Qwen-Image では無効です(transformer が違い、重み形状が違い —
+ファイルはロードされるのに顔は決して現れません)。StoryBored はレンダリング*後*では
+なく*前*にそれが分かるよう、ファミリーを端から端まで追跡します:
 
-- **Engines declare a family.** Image packs may carry a `lora_family` id in
-  their manifest ([WORKFLOWS.md](WORKFLOWS.md#manifestjson-field-by-field));
-  the shipped packs declare `krea2` (both Krea 2 packs), `z-image` and
-  `qwen-image`. A pack without the key is family-agnostic — no checks.
-- **Characters record a family.** Training stamps it automatically (below);
-  imported characters get a "Made for engine" picker that defaults to your
-  default image engine's family, with "not sure — any engine" allowed.
-  Characters created before families existed read as *unknown* and are never
-  blocked or warned about.
-- **Training targets your default image engine.** The wizard resolves that
-  engine's `lora_family` and tells the trainer to produce a LoRA of that
-  family (the `--family` argument of the trainer contract), stamping it on
-  the character at train time. If the default engine declares no family,
-  training falls back to `krea2` — the historical behavior of the
-  lora-factory pipeline.
-- **Compatibility guard.** Generating a shot whose `@characters` carry a
-  family different from the selected engine's is refused with a clear 409 —
-  *"@mari was trained for Krea 2 — this engine renders with Z-Image; switch
-  engines or remove the mention"* — and the shot drawer marks incompatible
-  engines *before* you hit Generate. Unknown/agnostic on either side never
-  blocks.
+- **エンジンはファミリーを宣言します。** 画像パックはマニフェストに
+  `lora_family` id を持てます([WORKFLOWS.md](WORKFLOWS.md#manifestjson-field-by-field));
+  同梱パックは `krea2`(Krea 2 パック両方)、`z-image`、`qwen-image` を宣言しています。
+  キーのないパックはファミリー非依存 — チェックなし。
+- **キャラクターはファミリーを記録します。** 学習は自動でスタンプします(下記);
+  読み込んだキャラクターには「対応エンジン」ピッカーが付き、既定画像エンジンの
+  ファミリーが既定になり「不明 — どのエンジンでも」も選べます。ファミリー概念の
+  登場前に作られたキャラクターは*不明*として読まれ、ブロックも警告もされません。
+- **学習は既定画像エンジンをターゲットにします。** ウィザードはそのエンジンの
+  `lora_family` を解決し、そのファミリーの LoRA を作るようトレーナーに指示します
+  (トレーナー契約の `--family` 引数)、学習時にキャラクターへスタンプします。
+  既定エンジンがファミリーを宣言していない場合、学習は `krea2` にフォールバック —
+  lora-factory パイプラインの従来の動作です。
+- **互換性ガード。** 選択されたエンジンと異なるファミリーの `@characters` を起用した
+  ショットの生成は、明確な 409 で拒否されます — *「@mari は Krea 2 向けに学習されました —
+  このエンジンは Z-Image でレンダリングします;エンジンを切り替えるか言及を削除してください」* —
+  さらにショットドロワーは Generate を押す*前に*互換性のないエンジンに印を付けます。
+  どちらかの側が不明/非依存なら決してブロックしません。
 
-Hardware and time per family (sourced measurements, not promises):
+ファミリーごとのハードウェアと時間(実測値に基づく。約束ではありません):
 
-| Family | GPU class | Recipe | Time | Sources |
+| ファミリー | GPU クラス | レシピ | 時間 | ソース |
 | --- | --- | --- | --- | --- |
-| Krea 2 (`krea2`) | 24 GB-class | 3000 steps, 1024/1280 buckets, qfloat8 | ~2.5–4 h (~4 s/it) | lora-factory README (recipe tuned on a 32 GB card) |
-| Z-Image (`z-image`) | 12 GB-class proven | 2000 steps, 512/768 buckets (skip 1024), float8 + memory optimization | ~1–2 h (~2–3 s/it); good results from as few as 6–25 images | [ai-toolkit #550](https://github.com/ostris/ai-toolkit/issues/550), [Z-Image #36](https://github.com/Tongyi-MAI/Z-Image/issues/36), [neurocanvas guide](https://neurocanvas.net/blog/zimage-lora-training-guide/), [HF community blog](https://huggingface.co/blog/content-and-code/training-a-lora-for-z-image-turbo) |
-| Qwen-Image (`qwen-image`) | — | **experimental**: ai-toolkit `qwen_image` arch, 2000-step example config | no verified VRAM/time numbers | [ai-toolkit example config](https://github.com/ostris/ai-toolkit/blob/main/config/examples/train_lora_qwen_image_24gb.yaml) |
+| Krea 2 (`krea2`) | 24 GB クラス | 3000 ステップ数、1024/1280 バケット、qfloat8 | ~2.5–4 時間(~4 s/it) | lora-factory README(32 GB カードで調整されたレシピ) |
+| Z-Image (`z-image`) | 12 GB クラスで実証済み | 2000 ステップ数、512/768 バケット(1024 はスキップ)、float8 + メモリ最適化 | ~1–2 時間(~2–3 s/it);6–25 枚という少ない画像でも良好な結果 | [ai-toolkit #550](https://github.com/ostris/ai-toolkit/issues/550)、[Z-Image #36](https://github.com/Tongyi-MAI/Z-Image/issues/36)、[neurocanvas guide](https://neurocanvas.net/blog/zimage-lora-training-guide/)、[HF community blog](https://huggingface.co/blog/content-and-code/training-a-lora-for-z-image-turbo) |
+| Qwen-Image (`qwen-image`) | — | **実験的**: ai-toolkit `qwen_image` アーキ、2000 ステップ数のサンプル設定 | 検証済みの VRAM/時間数値なし | [ai-toolkit example config](https://github.com/ostris/ai-toolkit/blob/main/config/examples/train_lora_qwen_image_24gb.yaml) |
 
-Below 12 GB, no training recipe is established for any shipped family — the
-practical answer at that tier is **importing ready-made LoRAs** (community
-hubs carry thousands of Z-Image character LoRAs). The setup wizard's trainer
-step tells you which of these applies to your GPU.
+12 GB 未満では、いかなる同梱ファミリーにも確立された学習レシピはありません —
+そのティアでの現実的な答えは**既製 LoRA の読み込み**です(コミュニティハブには
+数千の Z-Image キャラクター LoRA があります)。セットアップウィザードのトレーナー
+ステップは、あなたの GPU にどれが当てはまるかを教えます。
 
-## Prerequisites
+## 前提条件
 
-Character training wraps an external **lora-factory-style trainer** — a
-separate, local project that handles dataset prep, captioning, and the actual
-training run. StoryBored does not bundle a trainer; it drives whatever checkout
-you point `LORA_FACTORY_DIR` at, and expects that checkout to expose the
-prep/train scripts described in [WORKFLOWS.md](WORKFLOWS.md). Any trainer that
-follows that contract works.
+キャラクター学習は外部の **lora-factory 方式トレーナー**をラップします —
+データセット準備、キャプショニング、実際の学習実行を担う別のローカルプロジェクトです。
+StoryBored はトレーナーを同梱しません;`LORA_FACTORY_DIR` が指すチェックアウトを
+駆動し、そのチェックアウトが [WORKFLOWS.md](WORKFLOWS.md) に記述の prep/train
+スクリプトを公開していることを期待します。その契約に従う任意のトレーナーが動きます。
 
-This feature degrades gracefully: with no trainer configured, everything else
-in StoryBored keeps working and the "Train from photos" tab simply shows a
-"configure in Settings" hint. You can also skip training entirely and **import
-an existing LoRA** (see the top of this page).
+この機能は graceful に縮退します:トレーナー未設定でも StoryBored の他のすべては
+動き続け、「写真から学習」タブは単に「設定で構成してください」ヒントを表示します。
+学習を完全にスキップして**既存 LoRA を読み込む**こともできます(このページ冒頭参照)。
 
-To enable training:
+学習を有効化するには:
 
-1. Set up a lora-factory-style trainer on the machine with the GPU and follow
-   its own README.
-2. Point StoryBored at it — either in Settings (the setup wizard's trainer
-   step, or Settings → "Character trainer"; takes effect immediately) or in
-   `.env` (needs a restart):
+1. GPU を持つマシンに lora-factory 方式トレーナーをセットアップし、その README に
+   従います。
+2. StoryBored をそこに向けます — 設定から(セットアップウィザードのトレーナー
+   ステップ、または設定 →「キャラクタートレーナー」;即座に有効)か、`.env` で
+   (再起動が必要):
 
    ```
    LORA_FACTORY_DIR=/path/to/lora-factory
    ```
 
-3. Settings → trainer should show a green status.
+3. 設定 → トレーナーが緑のステータスを表示するはずです。
 
-If `LORA_FACTORY_DIR` is unset or wrong, the "Train from photos" tab shows a
-friendly "configure in Settings" hint instead of the wizard — nothing breaks.
+`LORA_FACTORY_DIR` が未設定か間違っている場合、「写真から学習」タブはウィザードの
+代わりに親切な「設定で構成してください」ヒントを表示します — 何も壊れません。
 
-## The dataset: 20–40 diverse photos
+## データセット:多様な写真 20〜40 枚
 
-Quality of the dataset decides quality of the character. Aim for **20–40
-photos** with real variety:
+データセットの質がキャラクターの質を決めます。実際の多様性を持つ
+**20〜40 枚の写真**を目指してください:
 
-- **Vary everything except the subject**: different angles, distances
-  (close-up through full body), lighting (indoor, outdoor, golden hour),
-  expressions, outfits, and backgrounds.
-- **Sharp and well-lit** beats high-resolution. Skip blurry, heavily filtered,
-  or tiny images.
-- **One subject per photo.** Group shots confuse training.
-- **Avoid repetition** — 30 near-identical selfies teach the model one pose,
-  not one person. Ten diverse photos beat forty clones.
-- The prep step will reject unusable images and tell you why, so when in
-  doubt, include the photo and let prep decide.
+- **被写体以外はすべて変える**:異なるアングル、距離(クローズアップから全身)、
+  光(屋内、屋外、ゴールデンアワー)、表情、服装、背景。
+- **シャープで適切な照明**が高解像度に勝ります。ぼやけ、強くフィルタされ、小さすぎる
+  画像は除外。
+- **1 枚に被写体 1 つ。** グループ写真は学習を混乱させます。
+- **反復を避ける** — 30 枚のほぼ同一のセルフィーは、1 人の人間ではなく 1 つの
+  ポーズを教えます。多様な 10 枚がクローン 40 枚に勝ります。
+- 準備ステップは使えない画像を拒否して理由を教えるため、迷ったら写真を含めて
+  prep に判断させてください。
 
-## Trigger tokens
+## トリガートークン
 
-The **trigger** is a rare token the LoRA binds the identity to — you never
-type it yourself after setup. When you write `@sam` in a shot description,
-StoryBored substitutes `"{trigger} {class_word}"` (e.g. `zxsam person`) into
-the prompt at generation time.
+**トリガー**は LoRA が同一性を結び付ける稀なトークンです — セットアップ後は
+自分で入力することは決してありません。ショットの説明に `@sam` と書くと、生成時に
+StoryBored が `"{trigger} {class_word}"`(例:`zxsam person`)をプロンプトに代入します。
 
-Rules of thumb (the wizard auto-suggests one that follows them):
+経験則(ウィザードがこれに従う候補を自動提案します):
 
-- Short, lowercase, and **not a real word** — `zxsam`, `ohwxa`, `kestrl`.
-- Unique per character. Reusing a trigger across characters cross-contaminates.
-- Don't change it after training — it's baked into the LoRA.
+- 短く、小文字で、**実在の単語ではない** — `zxsam`、`ohwxa`、`kestrl`。
+- キャラクターごとに一意。トリガーをキャラクター間で再利用すると交叉汚染します。
+- 学習後は変更しない — LoRA に焼き込まれています。
 
-## The wizard, step by step
+## ウィザード、ステップごと
 
-Characters → New character → **Train from photos**.
+キャラクター → 新規キャラクター → **写真から学習**。
 
-1. **Identity** — name, `@handle`, trigger (auto-suggested; editable), class
-   word. The class word is the generic noun the trigger attaches to — usually
-   `person`.
-2. **Photos** — drag-drop 20–40 images and/or paste image URLs (downloads are
-   capped at 10 MB each, 60 images max). A live counter and guidance text keep
-   you in the healthy range.
-3. **Prep & review** — StoryBored runs the trainer's dataset prep as a job
-   (crop, filter, caption). When it finishes you get a **prep report**:
-   how many images were kept vs. rejected and why. Review it — if too few
-   survived, add better photos and re-run prep rather than training on scraps.
-   Then hit **Start training (~3h)**.
-4. **Training** — a progress bar tracks the run. Training owns the GPU, so
-   generations queue behind it (the UI says so). When it completes, the
-   character flips to **trained**, wired to the final checkpoint at strength
-   1.0 — adjust strength on the character card if the identity is too strong
-   or too weak in generations.
-5. **Shootout (optional, recommended)** — training saves a checkpoint every
-   250 steps, and the last one isn't always the best (overtraining is real).
-   The panel that appears after training — also reachable later via the
-   character's edit dialog → **Shootout** — renders the same test shots with
-   each selected checkpoint × strength, builds a labeled contact sheet, and
-   scores every combo (face likeness against your training photos weighs 60%,
-   prompt match and artifact-cleanliness 20% each). Ranked results come with a
-   one-click **Use this** per row; the contact sheet opens full-size so you can
-   overrule the judges with your eyes. Defaults test steps 1500/2000/2500 and
-   final at strengths 0.7 and 1.0 (~10–20 min on the GPU); clear the
-   checkpoints field to test every saved version.
+1. **同一性** — 名前、`@handle`、トリガー(自動提案;編集可)、クラス語。クラス語は
+   トリガーが付く一般名詞 — 通常は `person`。
+2. **写真** — 20〜40 枚の画像をドラッグ&ドロップ、または画像 URL を貼り付け
+   (ダウンロードは 1 枚 10 MB、最大 60 枚に制限)。ライブカウンタとガイダンス
+   テキストが健全な範囲に保ちます。
+3. **準備とレビュー** — StoryBored はトレーナーのデータセット準備をジョブとして実行
+   します(クロップ、フィルタ、キャプション)。終了すると**準備レポート**が得られます:
+   保持 vs 拒否の画像数とその理由。確認してください — 生き残りが少なすぎるなら、
+   断片で学習するのではなく、より良い写真を追加して prep を再実行します。
+   その後**学習を開始(~3 時間)**を押します。
+4. **学習** — 進捗バーが実行を追跡します。学習は GPU を占有するため、生成はその後ろに
+   キューイングされます(UI がそう伝えます)。完了するとキャラクターは**学習済み**に
+   切り替わり、強度 1.0 で最終チェックポイントに接続されます — 生成での同一性が
+   強すぎ/弱すぎる場合はキャラクターカードで強度を調整してください。
+5. **選抜テスト(任意、推奨)** — 学習は 250 ステップ数ごとにチェックポイントを保存し、
+   最後のものが常に最良とは限りません(過学習は現実に起こります)。学習後に現れる
+   パネル — 後からはキャラクター編集ダイアログ → **選抜テスト**でも開けます — は、
+   選択した各チェックポイント × 強度で同じテストショットをレンダリングし、ラベル付き
+   コンタクトシートを作り、全組み合わせを採点します(学習写真に対する顔類似が 60%、
+   プロンプト一致とアーティファクトの清潔さが各 20%)。ランク付けされた結果には行ごとに
+   ワンクリックの**これを使う**が付き、コンタクトシートはフルサイズで開けるため、
+   審査員を自分の目で覆せます。既定はステップ数 1500/2000/2500 と最終を強度 0.7 と
+   1.0 でテスト(GPU で約 10–20 分);チェックポイント欄をクリアすると保存済みの
+   全バージョンをテストします。
 
-Time expectations: prep is minutes; training is **hours**, and how many
-depends on the target family (see [Model families](#model-families)): roughly
-2.5–4 h for a Krea 2 run on a 24 GB-class GPU, ~1–2 h for a Z-Image run on a
-12 GB-class one — start it before bed, not before a review meeting.
+時間の目安:prep は数分;学習は**時間単位**で、数はターゲットファミリー次第
+([モデルファミリー](#モデルファミリー) 参照):24 GB クラス GPU の Krea 2 実行で
+約 2.5–4 時間、12 GB クラスの Z-Image 実行で約 1–2 時間 — レビュー会議の前ではなく、
+寝る前に開始しましょう。
 
-> **Restart survival:** the training subprocess is started detached with a
-> pidfile under `DATA_DIR/training/pids/`, so restarting the StoryBored server
-> mid-run does **not** lose the training — on startup the server re-attaches to
-> the live process and the job keeps reporting progress. One deployment caveat:
-> if you run StoryBored under **systemd**, the default `KillMode=control-group`
-> kills every process in the service's cgroup on restart, including the
-> detached trainer. Add `KillMode=process` to the `[Service]` section so only
-> the server itself is stopped. If the trainer dies anyway, the job fails
-> cleanly and the character returns to **dataset** — just press
-> *Start training* again (cached prep artifacts make the rerun cheaper).
+> **再起動への耐性:** 学習サブプロセスは `DATA_DIR/training/pids/` 下の pidfile と
+> ともに detached で起動されるため、実行中の StoryBored サーバー再起動で学習が
+> **失われることはありません** — 起動時にサーバーが生きているプロセスへ再アタッチし、
+> ジョブは進捗を報告し続けます。デプロイ時の注意 1 点:StoryBored を **systemd** 配下で
+> 実行する場合、既定の `KillMode=control-group` は再起動時にサービスの cgroup 内の
+> 全プロセス — detached トレーナーを含む — を殺します。サーバー自体だけが停止されるよう、
+> `[Service]` セクションに `KillMode=process` を追加してください。それでもトレーナーが
+> 死んだ場合、ジョブはきれいに失敗しキャラクターは**データセット**に戻ります —
+> *学習を開始*をもう一度押すだけです(キャッシュされた prep 成果物により再実行は安上がりです)。
 
-## Using a trained character
+## 学習済みキャラクターの使い方
 
-Type `@` in any shot description and pick the character from the autocomplete.
-That's it — every take for that shot gets the character injected (the engine
-splices the LoRA into the generation graph and swaps `@handle` for the trigger
-phrase automatically; packs can also disable conflicting style LoRAs while a
-character is active — see [WORKFLOWS.md](WORKFLOWS.md#character-injection-explained)).
+任意のショットの説明に `@` と入力し、オートコンプリートからキャラクターを選びます。
+それだけです — そのショットの全テイクにキャラクターが注入されます(エンジンが
+生成グラフへ LoRA をスプライスし、`@handle` をトリガーフレーズへ自動置換します;
+キャラクターが有効な間、パックは衝突するスタイル LoRA を無効化することもできます —
+[WORKFLOWS.md](WORKFLOWS.md#character-injection-explained) 参照)。
 
-Multiple characters in one shot work: mention both handles and they're chained
-in sequence. Expect identity fidelity to drop a little with each additional
-character — that's a property of stacked LoRAs, not a StoryBored setting.
+1 ショットに複数キャラクターも動きます:両方のハンドルに言及すれば順にチェーンされます。
+キャラクターを追加するごとに同一性の忠実度は少し下がることを期待してください —
+積み重ねた LoRA の性質であって、StoryBored の設定ではありません。
 
-## Troubleshooting
+## トラブルシューティング
 
-| Symptom | Likely cause / fix |
+| 症状 | 考えられる原因 / 修正 |
 | --- | --- |
-| "Train from photos" tab says trainer not configured | `LORA_FACTORY_DIR` unset or wrong; check Settings → health. |
-| Prep rejected most photos | Dataset too uniform, blurry, or multi-subject — read the report's per-image reasons, add better photos. |
-| Character doesn't look right in generations | Too few/too-similar photos; or strength too low — try raising toward 1.0 before retraining. |
-| Character overpowers every shot (same pose/outfit bleeding in) | Dataset too repetitive; lower strength, and retrain with more variety. |
-| Generations queued forever | A training job holds the GPU lane — that's by design. Check the job tray; cancel training if you need the GPU now. |
-| Generate refused: "@x was trained for … — this engine renders with …" | The character's LoRA family doesn't match the selected engine (see [Model families](#model-families)). Switch to an engine of the character's family, remove the mention, or retrain the character with the new engine set as default. |
+| 「写真から学習」タブがトレーナー未設定と表示 | `LORA_FACTORY_DIR` が未設定か間違い;設定 → ヘルスを確認。 |
+| prep が大多数の写真を拒否 | データセットが単一化されすぎ、ぼやけ、または複数被写体 — レポートの画像ごとの理由を読み、より良い写真を追加。 |
+| 生成でキャラクターの見た目がおかしい | 写真が少なすぎ/似すぎ;または強度が低すぎ — 再学習の前に 1.0 に近づけてみる。 |
+| キャラクターが全ショットを圧倒する(同じポーズ/服装が漏れ出す) | データセットの反復がすぎ;強度を下げ、より多様に再学習。 |
+| 生成が永遠にキュー待ち | 学習ジョブが GPU レーンを占有 — 設計どおりです。ジョブトレイを確認;今 GPU が必要なら学習をキャンセル。 |
+| 生成が拒否:「@x は … 向けに学習されました — このエンジンは … でレンダリングします」 | キャラクターの LoRA ファミリーが選択エンジンと不一致([モデルファミリー](#モデルファミリー) 参照)。キャラクターのファミリーのエンジンに切り替えるか、言及を削除するか、新しいエンジンを既定にしてキャラクターを再学習。 |

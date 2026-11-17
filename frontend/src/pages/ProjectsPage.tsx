@@ -54,17 +54,17 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Modal title="New project" onClose={onClose}>
+    <Modal title="新規プロジェクト" onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Title">
+        <Field label="タイトル">
           <Input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. The Last Lighthouse"
+            placeholder="例: 最後の灯台"
           />
         </Field>
-        <Field label="Aspect ratio" hint="How wide your frame is — 16:9 is standard.">
+        <Field label="アスペクト比" hint="フレームの横幅比です。16:9 が標準です。">
           <Select value={aspect} onChange={(e) => setAspect(e.target.value)}>
             {ASPECTS.map((a) => (
               <option key={a} value={a}>
@@ -75,10 +75,10 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
         </Field>
         <div className="flex justify-end gap-2 pt-1">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            キャンセル
           </Button>
           <Button type="submit" variant="primary" busy={create.isPending} disabled={!title.trim()}>
-            Create project
+            プロジェクトを作成
           </Button>
         </div>
       </form>
@@ -113,28 +113,29 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
   if (result) {
     const renamed = Object.entries(result.characters.renamed);
     return (
-      <Modal title="Project imported" onClose={onClose}>
+      <Modal title="プロジェクトを読み込みました" onClose={onClose}>
         <div className="space-y-4">
           <p className="text-sm text-mist">
-            <span className="font-semibold text-paper">{result.project.title}</span> is now
-            on your board{result.characters.linked.length > 0 && (
+            <span className="font-semibold text-paper">{result.project.title}</span>{" "}
+            をボードに追加しました
+            {result.characters.linked.length > 0 && (
               <>
                 {" "}
-                — reusing {result.characters.linked.map((h) => `@${h}`).join(", ")}
+                — 既存の {result.characters.linked.map((h) => `@${h}`).join(", ")} を再利用
               </>
             )}
-            .
+            。
           </p>
           {renamed.length > 0 && (
             <p className="text-xs text-fog">
-              Renamed to avoid clashes:{" "}
+              重複を避けるため名前を変更:{" "}
               {renamed.map(([from, to]) => `@${from} → @${to}`).join(", ")}
             </p>
           )}
           {result.warnings.length > 0 && (
             <div className="rounded-md border border-amber-450/30 bg-amber-450/10 p-3">
               <p className="mb-1 text-xs font-semibold text-amber-450">
-                A few things to check
+                確認が必要な項目
               </p>
               <ul className="list-disc space-y-1 pl-4 text-xs text-mist">
                 {result.warnings.map((w, i) => (
@@ -145,10 +146,10 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
           )}
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="ghost" onClick={onClose}>
-              Close
+              閉じる
             </Button>
             <Button variant="primary" onClick={() => navigate(`/p/${result.project.id}`)}>
-              Open project
+              プロジェクトを開く
             </Button>
           </div>
         </div>
@@ -157,11 +158,12 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Modal title="Import a project" onClose={onClose}>
+    <Modal title="プロジェクトを読み込む" onClose={onClose}>
       <div className="space-y-4">
         <p className="text-sm text-fog">
-          Bring in a <span className="font-mono text-xs">.storybored</span> file exported
-          from StoryBored — the board, its images and videos come with it.
+          StoryBored から書き出した{" "}
+          <span className="font-mono text-xs">.storybored</span>{" "}
+          ファイルを読み込みます。ボードと画像・動画も一緒に取り込まれます。
         </p>
         <input
           ref={fileInput}
@@ -176,9 +178,9 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-bright px-4 py-6 text-sm text-fog transition-colors hover:border-amber-450/50 hover:text-mist"
         >
           <FolderUp size={16} />
-          {file ? file.name : "Choose a .storybored file"}
+          {file ? file.name : ".storybored ファイルを選択"}
         </button>
-        <Field label="If a character with the same @handle already exists…">
+        <Field label="同じ @handle のキャラクターが既に存在する場合">
           <div className="space-y-2">
             <label className="flex cursor-pointer items-start gap-2 text-sm text-mist">
               <input
@@ -189,9 +191,9 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
                 className="mt-0.5 accent-[#f0b429]"
               />
               <span>
-                <span className="font-medium text-paper">Reuse my characters</span>
+                <span className="font-medium text-paper">既存のキャラクターを再利用</span>
                 <span className="block text-xs text-fog">
-                  Imported shots use your existing character when the @handle matches.
+                  @handle が一致すれば、読み込んだショットは既存のキャラクターを使います。
                 </span>
               </span>
             </label>
@@ -204,10 +206,9 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
                 className="mt-0.5 accent-[#f0b429]"
               />
               <span>
-                <span className="font-medium text-paper">Keep them separate</span>
+                <span className="font-medium text-paper">別々に扱う</span>
                 <span className="block text-xs text-fog">
-                  Imported characters get a new @handle (e.g. @ava2) and mentions are
-                  updated.
+                  読み込んだキャラクターには新しい @handle（例: @ava2）が付き、参照箇所も更新されます。
                 </span>
               </span>
             </label>
@@ -215,7 +216,7 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
         </Field>
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            キャンセル
           </Button>
           <Button
             variant="primary"
@@ -223,7 +224,7 @@ function ImportProjectModal({ onClose }: { onClose: () => void }) {
             busy={doImport.isPending}
             disabled={!file}
           >
-            <FolderUp size={14} /> Import
+            <FolderUp size={14} /> 読み込み
           </Button>
         </div>
       </div>
@@ -263,7 +264,7 @@ export function ProjectsPage() {
   const exportProject = useMutation({
     mutationFn: (id: number) => apiPost<{ job_id: number }>(`/api/projects/${id}/export`),
     onSuccess: () => {
-      toast("Packing your project into a file…", "success");
+      toast("プロジェクトをファイルにまとめています…", "success");
       qc.invalidateQueries({ queryKey: ["jobs"] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -273,7 +274,7 @@ export function ProjectsPage() {
     mutationFn: () => apiPost<Project>("/api/demo"),
     onSuccess: (p) => {
       qc.invalidateQueries({ queryKey: ["projects"] });
-      toast("Demo project loaded — take a look around.", "success");
+      toast("デモプロジェクトを読み込みました。ぜひ見て回ってください。", "success");
       navigate(`/p/${p.id}`);
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -284,17 +285,17 @@ export function ProjectsPage() {
       <HealthBanner />
       <div className="mb-7 flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
+          <h1 className="text-xl font-semibold tracking-tight">プロジェクト</h1>
           <p className="mt-1 text-sm text-fog">
-            Every film starts as a board of shots.
+            すべての作品は、ショットのボードから始まります。
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setImporting(true)}>
-            <FolderUp size={15} /> Import
+            <FolderUp size={15} /> 読み込み
           </Button>
           <Button variant="primary" onClick={() => setCreating(true)}>
-            <Plus size={15} /> New project
+            <Plus size={15} /> 新規プロジェクト
           </Button>
         </div>
       </div>
@@ -312,19 +313,19 @@ export function ProjectsPage() {
       {data && data.length === 0 && (
         <EmptyState
           icon={Clapperboard}
-          title="No projects yet"
-          body="Create a project, sketch out scenes and shots, then let the engine bring them to life. New here? Load the demo project to see a finished board."
+          title="プロジェクトはまだありません"
+          body="プロジェクトを作成し、シーンとショットを描き起こして、エンジンで動かしましょう。はじめての方はデモプロジェクトを読み込むと、完成済みのボードが見られます。"
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button variant="primary" onClick={() => setCreating(true)}>
-                <Plus size={15} /> Start your first project
+                <Plus size={15} /> 最初のプロジェクトを作成
               </Button>
               <Button
                 variant="outline"
                 onClick={() => loadDemo.mutate()}
                 busy={loadDemo.isPending}
               >
-                Load demo project
+                デモプロジェクトを読み込む
               </Button>
             </div>
           }
@@ -361,13 +362,13 @@ export function ProjectsPage() {
                       e.preventDefault();
                       if (
                         window.confirm(
-                          `Delete "${p.title}"? All its generated images, videos and exports will be deleted from disk too. This can't be undone.`,
+                          `「${p.title}」を削除しますか？生成された画像・動画・書き出しファイルもディスクから削除されます。この操作は取り消せません。`,
                         )
                       )
                         remove.mutate(p.id);
                     }}
                     className="absolute right-2 top-2 rounded bg-ink-900/70 p-1 text-transparent backdrop-blur-sm transition-colors hover:!text-status-failed group-hover:text-fog"
-                    title="Delete project"
+                    title="プロジェクトを削除"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -380,7 +381,7 @@ export function ProjectsPage() {
                       {p.aspect_ratio}
                     </span>
                     {p.updated_at && (
-                      <span>updated {new Date(p.updated_at).toLocaleDateString()}</span>
+                      <span>{new Date(p.updated_at).toLocaleDateString()} 更新</span>
                     )}
                     <span className="ml-auto flex items-center gap-1.5">
                       {exportJob?.status === "done" && (
@@ -390,9 +391,9 @@ export function ProjectsPage() {
                             window.location.href = `/api/projects/${p.id}/export/download`;
                           }}
                           className="flex items-center gap-1 rounded-md border border-line-bright px-2 py-1 text-[11px] font-medium text-mist transition-colors hover:text-paper"
-                          title="Download the exported project file"
+                          title="書き出したプロジェクトファイルをダウンロード"
                         >
-                          <Download size={12} /> Download
+                          <Download size={12} /> ダウンロード
                         </button>
                       )}
                       <button
@@ -402,10 +403,10 @@ export function ProjectsPage() {
                         }}
                         disabled={exporting}
                         className="flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[11px] font-medium text-fog transition-colors hover:border-line-bright hover:text-mist disabled:opacity-70"
-                        title="Export this project as a single shareable file"
+                        title="このプロジェクトを共有用ファイル 1 つに書き出す"
                       >
                         {exporting ? <Spinner size={12} /> : <FileDown size={12} />}
-                        {exporting ? "Exporting…" : "Export"}
+                        {exporting ? "書き出し中…" : "書き出し"}
                       </button>
                     </span>
                   </div>
@@ -416,7 +417,7 @@ export function ProjectsPage() {
                   )}
                   {exportJob?.status === "failed" && (
                     <p className="mt-2 text-[11px] text-status-failed">
-                      Export failed: {exportJob.error ?? "unknown error"}
+                      書き出しに失敗しました: {exportJob.error ?? "不明なエラー"}
                     </p>
                   )}
                 </div>

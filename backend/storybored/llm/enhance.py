@@ -24,6 +24,9 @@ camera/lens or motion, and scene environment (location, time of day, lighting, s
 OUTPUT: exactly one enhanced prompt and nothing else — no preamble, no quotes, \
 no markdown, no explanation, no alternatives.
 
+LANGUAGE: write the prompt in Japanese. Keep every @handle token exactly as \
+written — never translate or reword it; all other text is Japanese.
+
 RULES:
 - Preserve any @handle tokens (like @hero) EXACTLY as written. Never rename, \
 expand, or describe them; they are resolved downstream into trained characters.
@@ -52,7 +55,8 @@ render it faithfully without commentary."""
 
 HANDLE_NUDGE = (
     "Your prompt dropped these character tokens: {missing}. Rewrite the same "
-    "prompt keeping every @handle token exactly as written, and return only the prompt."
+    "prompt keeping every @handle token exactly as written, and return only "
+    "the prompt — still written in Japanese."
 )
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)

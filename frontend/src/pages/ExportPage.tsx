@@ -62,7 +62,7 @@ export function ExportPage() {
   const renderOne = useMutation({
     mutationFn: (shotId: number) => apiPost(`/api/shots/${shotId}/render-video`, {}),
     onSuccess: () => {
-      toast("Video render queued.", "success");
+      toast("動画レンダリングをキューに追加しました。", "success");
       qc.invalidateQueries({ queryKey: ["jobs"] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -71,7 +71,7 @@ export function ExportPage() {
   const renderAll = useMutation({
     mutationFn: () => apiPost(`/api/projects/${projectId}/render-videos`, {}),
     onSuccess: () => {
-      toast("Queued videos for all approved shots that need one.", "success");
+      toast("承認済みの全ショットの動画をキューに追加しました。", "success");
       qc.invalidateQueries({ queryKey: ["jobs"] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -85,7 +85,7 @@ export function ExportPage() {
       }),
     onSuccess: (r) => {
       setAnimaticJobId(r.job_id);
-      toast("Cutting your animatic…", "success");
+      toast("アニマティックを生成中…", "success");
       qc.invalidateQueries({ queryKey: ["jobs"] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -99,7 +99,7 @@ export function ExportPage() {
       </div>
     );
   if (isError || !data)
-    return <ErrorState body="This project couldn't be loaded." onRetry={() => refetch()} />;
+    return <ErrorState body="このプロジェクトを読み込めませんでした。" onRetry={() => refetch()} />;
 
   // The backend already returns exports newest-first; sort by created_at desc
   // when present so we always play/download the latest cut, not the oldest.
@@ -119,12 +119,12 @@ export function ExportPage() {
         <Link
           to={`/p/${projectId}`}
           className="rounded-md p-1.5 text-fog hover:text-paper"
-          title="Back to board"
+          title="ボードに戻る"
         >
           <ArrowLeft size={17} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Export</h1>
+          <h1 className="text-xl font-semibold tracking-tight">書き出し</h1>
           <p className="text-xs text-fog">{data.title}</p>
         </div>
       </div>
@@ -132,11 +132,11 @@ export function ExportPage() {
       {approvedShots.length === 0 ? (
         <EmptyState
           icon={Clapperboard}
-          title="Nothing approved yet"
-          body="Approve shots on the board (generate stills, pick your favorite take, hit Approve) and they'll line up here for the final cut."
+          title="まだ承認済みのショットがありません"
+          body="ボードでショットを承認してください(スチルを生成してお気に入りのテイクを選び、「承認」を押す)。承認したショットがここに並び、最終カットを作れます。"
           action={
             <Link to={`/p/${projectId}`}>
-              <Button variant="primary">Back to the board</Button>
+              <Button variant="primary">ボードに戻る</Button>
             </Link>
           }
         />
@@ -146,11 +146,11 @@ export function ExportPage() {
           <section className="overflow-hidden rounded-xl border border-line bg-ink-900/40">
             <header className="flex items-center justify-between border-b border-line px-4 py-3">
               <h2 className="text-sm font-semibold">
-                Approved shots{" "}
+                承認済みショット{" "}
                 <span className="font-normal text-fog">({approvedShots.length})</span>
               </h2>
               <Button size="sm" onClick={() => renderAll.mutate()} busy={renderAll.isPending}>
-                <Film size={13} /> Render all videos
+                <Film size={13} /> 全動画をレンダリング
               </Button>
             </header>
             <ul>
@@ -169,21 +169,21 @@ export function ExportPage() {
                   >
                     <span className="w-10 text-sm font-semibold text-paper">{label}</span>
                     <span className="min-w-0 flex-1 truncate text-sm text-mist">
-                      {shot.description || "Untitled shot"}
+                      {shot.description || "無題のショット"}
                     </span>
                     <span className="text-xs text-fog">{formatDuration(shot.duration_s)}</span>
                     {v?.status === "done" ? (
                       <Badge tone="green">
-                        <Check size={10} /> video
+                        <Check size={10} /> 動画あり
                       </Badge>
                     ) : rendering ? (
                       <Badge tone="amber" pulse>
-                        rendering
+                        レンダリング中
                       </Badge>
                     ) : v?.status === "failed" ? (
-                      <Badge tone="red">failed</Badge>
+                      <Badge tone="red">失敗</Badge>
                     ) : (
-                      <Badge tone="fog">still only</Badge>
+                      <Badge tone="fog">スチルのみ</Badge>
                     )}
                     {v?.status !== "done" && (
                       <Button
@@ -191,7 +191,7 @@ export function ExportPage() {
                         onClick={() => renderOne.mutate(shot.id)}
                         disabled={rendering || busyThis}
                       >
-                        <Play size={12} /> {rendering ? "Rendering…" : "Render"}
+                        <Play size={12} /> {rendering ? "レンダリング中…" : "レンダリング"}
                       </Button>
                     )}
                   </li>
@@ -204,11 +204,10 @@ export function ExportPage() {
           <section className="rounded-xl border border-line bg-ink-900/40 p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold">Animatic</h2>
+                <h2 className="text-sm font-semibold">アニマティック</h2>
                 <p className="mt-1 text-xs leading-relaxed text-fog">
-                  One MP4 of your board, in order — finished videos where you have
-                  them, held stills where you don't. Export the whole thing or a
-                  single scene.
+                  ボードを順番につなげた 1 本の MP4 — 動画が完成しているショットは動画を、
+                  そうでないショットはスチルで繋ぎます。全体または単一シーンで書き出せます。
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-4">
                   <select
@@ -218,10 +217,10 @@ export function ExportPage() {
                     }
                     className="h-8 rounded-md border border-line bg-ink-900 px-2 text-xs text-mist"
                   >
-                    <option value="all">Whole board</option>
+                    <option value="all">ボード全体</option>
                     {(data.scenes ?? []).map((scene, i) => (
                       <option key={scene.id} value={scene.id}>
-                        Scene {i + 1}: {scene.title || scene.slugline || "Untitled"}
+                        シーン {i + 1}: {scene.title || scene.slugline || "無題"}
                       </option>
                     ))}
                   </select>
@@ -232,7 +231,7 @@ export function ExportPage() {
                       onChange={(e) => setTitleCards(e.target.checked)}
                       className="h-4 w-4 accent-[#f0b429]"
                     />
-                    Scene title cards
+                    シーンのタイトルカードを追加
                   </label>
                 </div>
               </div>
@@ -245,7 +244,7 @@ export function ExportPage() {
                   animaticJob?.status === "queued"
                 }
               >
-                <Clapperboard size={14} /> Export animatic
+                <Clapperboard size={14} /> アニマティックを書き出し
               </Button>
             </div>
 
@@ -253,14 +252,14 @@ export function ExportPage() {
               <div className="mt-4 space-y-2">
                 <div className="flex items-center gap-2 text-xs text-fog">
                   <Spinner size={13} />
-                  {animaticJob.detail || "Assembling clips…"}
+                  {animaticJob.detail || "クリップを組み立て中…"}
                 </div>
                 <ProgressBar value={animaticJob.progress} />
               </div>
             )}
             {animaticJob?.status === "failed" && (
               <p className="mt-4 rounded-md border border-status-failed/30 bg-status-failed/10 p-3 text-xs text-status-failed">
-                Export failed: {animaticJob.error ?? "unknown error"}
+                書き出しに失敗しました: {animaticJob.error ?? "不明なエラー"}
               </p>
             )}
 
@@ -272,7 +271,7 @@ export function ExportPage() {
                   download
                   className="inline-flex h-9 items-center gap-2 rounded-md border border-line-bright px-3.5 text-sm font-medium text-mist hover:text-paper"
                 >
-                  <Download size={14} /> Download MP4
+                  <Download size={14} /> MP4 をダウンロード
                 </a>
               </div>
             )}

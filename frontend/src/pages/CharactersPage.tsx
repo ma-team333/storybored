@@ -43,17 +43,17 @@ import { useToast } from "../lib/toast";
 function statusBadge(c: Character) {
   switch (c.status) {
     case "trained":
-      return <Badge tone="green">trained</Badge>;
+      return <Badge tone="green">学習済み</Badge>;
     case "training":
       return (
         <Badge tone="amber" pulse>
-          training
+          学習中
         </Badge>
       );
     case "dataset":
-      return <Badge tone="blue">photos ready</Badge>;
+      return <Badge tone="blue">写真準備完了</Badge>;
     default:
-      return <Badge tone="fog">ready</Badge>;
+      return <Badge tone="fog">準備完了</Badge>;
   }
 }
 
@@ -78,11 +78,11 @@ function IdentityFields({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Name">
+        <Field label="名前">
           <Input
             autoFocus
             value={value.name}
-            placeholder="e.g. Captain Mara"
+            placeholder="例: キャプテン・マラ"
             onChange={(e) => {
               const name = e.target.value;
               onChange({
@@ -96,7 +96,7 @@ function IdentityFields({
             }}
           />
         </Field>
-        <Field label="Handle" hint="Type @handle in shot descriptions.">
+        <Field label="ハンドル" hint="ショットの説明文で @ハンドル を入力して呼び出せます。">
           <Input
             value={value.handle}
             onChange={(e) => onChange({ ...value, handle: handleFromName(e.target.value) })}
@@ -106,8 +106,8 @@ function IdentityFields({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field
-          label="Trigger word"
-          hint="A rare made-up word the engine associates with this face."
+          label="トリガーワード"
+          hint="この顔に関連付ける、他と被りにくい造語です。"
         >
           <div className="flex gap-1.5">
             <Input
@@ -119,14 +119,14 @@ function IdentityFields({
                 type="button"
                 size="md"
                 onClick={() => onChange({ ...value, trigger: suggestTrigger(value.name) })}
-                title="Suggest a rare word"
+                title="レアな単語を提案"
               >
                 <Dices size={14} />
               </Button>
             )}
           </div>
         </Field>
-        <Field label="Class word" hint='Usually "person", "man" or "woman".'>
+        <Field label="クラスワード" hint="通常は person、man、woman です。">
           <Input
             value={value.class_word}
             onChange={(e) => onChange({ ...value, class_word: e.target.value })}
@@ -211,7 +211,7 @@ function ImportTab({ onDone }: { onDone: () => void }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["characters"] });
-      toast(`${identity.name} is ready to cast.`, "success");
+      toast(`${identity.name} をキャストに追加できるようになりました。`, "success");
       onDone();
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -225,31 +225,31 @@ function ImportTab({ onDone }: { onDone: () => void }) {
   return (
     <div className="space-y-4">
       <IdentityFields value={identity} onChange={setIdentity} />
-      <Field label="Character file">
+      <Field label="キャラクターファイル">
         <div className="mb-2 flex gap-1.5">
           <Button
             size="sm"
             variant={source === "existing" ? "primary" : "outline"}
             onClick={() => setSource("existing")}
           >
-            Already on the engine
+            エンジン上の既存ファイル
           </Button>
           <Button
             size="sm"
             variant={source === "upload" ? "primary" : "outline"}
             onClick={() => setSource("upload")}
           >
-            Upload a file
+            ファイルをアップロード
           </Button>
         </div>
         {source === "existing" ? (
           lorasError ? (
             <p className="rounded-md border border-line p-3 text-xs text-fog">
-              Couldn't list character files — the engine may be offline.
+              キャラクターファイル一覧を取得できませんでした — エンジンがオフラインの可能性があります。
             </p>
           ) : (
             <Select value={loraName} onChange={(e) => setLoraName(e.target.value)}>
-              <option value="">Choose a character file…</option>
+              <option value="">キャラクターファイルを選択…</option>
               {(available ?? []).map((l) => (
                 <option key={l} value={l}>
                   {l}
@@ -260,7 +260,7 @@ function ImportTab({ onDone }: { onDone: () => void }) {
         ) : (
           <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-line px-3 py-2.5 text-sm text-fog hover:border-amber-450/40 hover:text-mist">
             <Upload size={14} />
-            {file ? file.name : "Choose a .safetensors file"}
+            {file ? file.name : ".safetensors ファイルを選択"}
             <input
               type="file"
               accept=".safetensors"
@@ -271,7 +271,7 @@ function ImportTab({ onDone }: { onDone: () => void }) {
         )}
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Strength" hint="How strongly the character is applied (0.5–1.2 typical).">
+        <Field label="強さ" hint="キャラクターの適用強度です（通常 0.5〜1.2）。">
           <Input
             type="number"
             step={0.05}
@@ -282,8 +282,8 @@ function ImportTab({ onDone }: { onDone: () => void }) {
           />
         </Field>
         <Field
-          label="Made for engine"
-          hint="Character files only work with the engine family they were trained for."
+          label="対応エンジン"
+          hint="キャラクターファイルは学習時のエンジンファミリーでしか使えません。"
         >
           <Select
             value={family}
@@ -292,7 +292,7 @@ function ImportTab({ onDone }: { onDone: () => void }) {
               setFamily(e.target.value);
             }}
           >
-            <option value="">Not sure — any engine</option>
+            <option value="">不明 — 汎用エンジン</option>
             {familyOptions.map((f) => (
               <option key={f} value={f}>
                 {loraFamilyLabel(f)}
@@ -303,7 +303,7 @@ function ImportTab({ onDone }: { onDone: () => void }) {
       </div>
       <div className="flex justify-end pt-1">
         <Button variant="primary" disabled={!valid} busy={submit.isPending} onClick={() => submit.mutate()}>
-          Add character
+          キャラクターを追加
         </Button>
       </div>
     </div>
@@ -351,7 +351,7 @@ function PhotoGrid({
             <button
               onClick={() => onRemove(i)}
               className="absolute right-0.5 top-0.5 rounded bg-ink-950/80 p-0.5 text-fog opacity-0 transition-opacity hover:text-status-failed group-hover:opacity-100"
-              aria-label="Remove photo"
+              aria-label="写真を削除"
             >
               <X size={11} />
             </button>
@@ -362,7 +362,7 @@ function PhotoGrid({
           className="flex aspect-square flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line text-fog hover:border-amber-450/40 hover:text-amber-450"
         >
           <ImagePlus size={16} />
-          <span className="text-[10px]">add</span>
+          <span className="text-[10px]">追加</span>
         </button>
       </div>
       <input
@@ -377,7 +377,7 @@ function PhotoGrid({
         }}
       />
       <p className="mt-2 text-center text-xs text-fog">
-        Drag photos here or click add — clear, well-lit faces from different angles work best.
+        写真をドラッグするか 追加 をクリック — 明るくはっきり写った顔を、複数アングルから用意するのが最適です。
       </p>
     </div>
   );
@@ -423,7 +423,7 @@ function ShootoutPanel({
       }),
     onSuccess: () => {
       setRerunOpen(false);
-      toast("Shootout started — rendering test shots of each version.", "success");
+      toast("選抜テストを開始しました — 各バージョンのテストショットをレンダリングします。", "success");
       qc.invalidateQueries({ queryKey: ["training", characterId] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -436,7 +436,7 @@ function ShootoutPanel({
         strength: row.strength,
       }),
     onSuccess: () => {
-      toast("Character switched to that version.", "success");
+      toast("キャラクターをそのバージョンに切り替えました。", "success");
       qc.invalidateQueries({ queryKey: ["training", characterId] });
       qc.invalidateQueries({ queryKey: ["characters"] });
     },
@@ -446,13 +446,13 @@ function ShootoutPanel({
   const options = (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
-        <Field label="Strengths" hint="Comma list — one grid row per strength.">
+        <Field label="強さ" hint="カンマ区切り — 強さごとにグリッドの 1 行が生成されます。">
           <Input value={strengths} onChange={(e) => setStrengths(e.target.value)} />
         </Field>
-        <Field label="Checkpoints" hint='Step numbers and/or "final"; empty = all (slower).'>
+        <Field label="チェックポイント" hint="ステップ数と final。空欄で全件（時間がかかります）。">
           <Input value={ckpts} onChange={(e) => setCkpts(e.target.value)} placeholder="all" />
         </Field>
-        <Field label="Shots per prompt" hint="More is fairer but slower (1–4).">
+        <Field label="プロンプトあたりのショット数" hint="多いほど公平ですが遅くなります（1〜4）。">
           <Input
             type="number"
             min={1}
@@ -468,7 +468,7 @@ function ShootoutPanel({
         busy={start.isPending}
         onClick={() => start.mutate()}
       >
-        <Trophy size={15} /> Start shootout (~10–20 min on the GPU)
+        <Trophy size={15} /> 選抜テストを開始（GPU で約 10〜20 分）
       </Button>
     </div>
   );
@@ -478,10 +478,9 @@ function ShootoutPanel({
     return (
       <div className="space-y-4">
         <div className="text-center">
-          <p className="text-sm font-medium text-paper">Checkpoint shootout in progress</p>
+          <p className="text-sm font-medium text-paper">チェックポイント選抜テストを実行中</p>
           <p className="mt-1 text-xs text-fog">
-            Rendering the same test shots with each saved version, then scoring them for
-            likeness and image quality. You can close this window; it keeps running.
+            保存済みの各バージョンで同じテストショットをレンダリングし、類似度と画像品質で採点しています。この画面は閉じても処理は続行されます。
           </p>
         </div>
         <ProgressBar value={shootout.progress} />
@@ -491,7 +490,7 @@ function ShootoutPanel({
           </pre>
         )}
         <div className="flex justify-center">
-          <Button onClick={onClose}>Close — keep running</Button>
+          <Button onClick={onClose}>閉じる（処理は続行）</Button>
         </div>
       </div>
     );
@@ -516,17 +515,16 @@ function ShootoutPanel({
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-paper">Shootout results</p>
+          <p className="text-sm font-medium text-paper">選抜テスト結果</p>
           <p className="mt-0.5 text-xs text-fog">
-            Ranked by likeness to the training photos (60%), prompt match and cleanliness
-            (20% each). Trust your eyes too — open the contact sheet before picking.
+            学習写真との類似度（60%）、プロンプト適合と画像のきれいさ（各 20%）で順位付けしています。目でも確認を — 選ぶ前にコンタクトシートを開きましょう。
           </p>
         </div>
         {hasGrid && (
-          <a href={gridUrl} target="_blank" rel="noreferrer" title="Open full size">
+          <a href={gridUrl} target="_blank" rel="noreferrer" title="拡大表示">
             <img
               src={gridUrl}
-              alt="Checkpoint comparison contact sheet"
+              alt="チェックポイント比較コンタクトシート"
               className="max-h-56 w-full rounded-md border border-line object-contain"
             />
           </a>
@@ -536,12 +534,12 @@ function ShootoutPanel({
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-line text-left text-fog">
-                  <th className="p-2 font-medium">Version</th>
-                  <th className="p-2 font-medium">Strength</th>
-                  <th className="p-2 font-medium">Likeness</th>
-                  <th className="p-2 font-medium">Prompt</th>
-                  <th className="p-2 font-medium">Clean</th>
-                  <th className="p-2 font-medium">Total</th>
+                  <th className="p-2 font-medium">バージョン</th>
+                  <th className="p-2 font-medium">強さ</th>
+                  <th className="p-2 font-medium">類似度</th>
+                  <th className="p-2 font-medium">プロンプト</th>
+                  <th className="p-2 font-medium">きれいさ</th>
+                  <th className="p-2 font-medium">合計</th>
                   <th className="p-2" />
                 </tr>
               </thead>
@@ -560,7 +558,7 @@ function ShootoutPanel({
                       </span>
                       {row.no_face > 0 && (
                         <span className="ml-1.5 text-[10px] text-status-failed">
-                          {row.no_face}/{row.cells} no face
+                          {row.no_face}/{row.cells} 顔なし
                         </span>
                       )}
                     </td>
@@ -571,14 +569,14 @@ function ShootoutPanel({
                     <td className="p-2 font-semibold text-paper">{row.total.toFixed(2)}</td>
                     <td className="p-2 text-right">
                       {inUse(row) ? (
-                        <Badge tone="green">in use</Badge>
+                        <Badge tone="green">使用中</Badge>
                       ) : (
                         <Button
                           size="sm"
                           busy={apply.isPending}
                           onClick={() => apply.mutate(row)}
                         >
-                          Use this
+                          これを使う
                         </Button>
                       )}
                     </td>
@@ -589,16 +587,15 @@ function ShootoutPanel({
           </div>
         ) : (
           <p className="rounded-md border border-line p-3 text-xs text-fog">
-            The scores couldn't be read — open the contact sheet above and pick by eye, then
-            set the version manually in the character's edit dialog.
+            スコアを読み取れませんでした — 上のコンタクトシートを目視で確認し、キャラクター編集ダイアログでバージョンを手動設定してください。
           </p>
         )}
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => setRerunOpen((v) => !v)}>
-            Run again with different settings
+            設定を変えて再実行
           </Button>
           <Button variant="primary" onClick={onClose}>
-            Done
+            完了
           </Button>
         </div>
         {rerunOpen && options}
@@ -612,25 +609,22 @@ function ShootoutPanel({
       <div className="text-center">
         <Trophy size={26} className="mx-auto text-amber-450" />
         <p className="mt-2 text-sm font-medium text-paper">
-          {shootout?.status === "failed" ? "Shootout failed" : "Training complete"}
+          {shootout?.status === "failed" ? "選抜テストに失敗しました" : "学習が完了しました"}
         </p>
         {shootout?.status === "failed" ? (
           <p className="mx-auto mt-1 max-w-md rounded-md border border-status-failed/30 bg-status-failed/10 p-2 text-xs text-status-failed">
-            {shootout.error ?? "unknown error"}
+            {shootout.error ?? "不明なエラー"}
           </p>
         ) : (
           <p className="mx-auto mt-1 max-w-md text-xs text-fog">
-            This character is ready — mention them with @ in any shot. Optional quality pass:
-            training saved several versions along the way, and the last one isn't always the
-            best. The shootout renders test shots with each version, scores the likeness, and
-            lets you pick the winner.
+            このキャラクターはすぐ使えます — どのショットでも @ を付けて言及してください。任意の品質チェック: 学習では複数のバージョンが保存されており、最後のものが常に最良とは限りません。選抜テストは各バージョンでテストショットをレンダリングして類似度を採点し、最良のものを選べるようにします。
           </p>
         )}
       </div>
       {options}
       <div className="flex justify-center">
         <Button variant="ghost" onClick={onClose}>
-          Skip — use the final version
+          スキップ — 最終バージョンを使用
         </Button>
       </div>
     </div>
@@ -652,7 +646,7 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
   const startTrain = useMutation({
     mutationFn: () => apiPost(`/api/training/${characterId}/train`),
     onSuccess: () => {
-      toast("Training started — this takes a few hours.", "success");
+      toast("学習を開始しました — 数時間かかります。", "success");
       qc.invalidateQueries({ queryKey: ["training", characterId] });
       qc.invalidateQueries({ queryKey: ["characters"] });
     },
@@ -662,13 +656,13 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
   if (isError)
     return (
       <p className="rounded-md border border-line p-4 text-sm text-fog">
-        Couldn't load training status — the server may be busy. It will refresh automatically.
+        学習ステータスを読み込めませんでした — サーバーが混み合っている可能性があります。自動的に再読み込みされます。
       </p>
     );
   if (!info)
     return (
       <div className="flex items-center justify-center gap-2 p-8 text-sm text-fog">
-        <Spinner /> Loading…
+        <Spinner /> 読み込み中…
       </div>
     );
 
@@ -691,16 +685,15 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
     return (
       <div className="space-y-4">
         <div className="text-center">
-          <p className="text-sm font-medium text-paper">Training in progress</p>
+          <p className="text-sm font-medium text-paper">学習を実行中</p>
           <p className="mt-1 text-xs text-fog">
-            The GPU is busy training — image and video generations will wait in line until
-            it finishes (usually ~3 hours). You can close this window; training continues.
+            GPU が学習で使用中のため、完了まで（通常約 3 時間）画像・動画生成は順番待ちになります。この画面は閉じても学習は続行されます。
           </p>
         </div>
         <ProgressBar value={train.progress} />
         {train.detail && <p className="truncate text-center text-xs text-fog">{train.detail}</p>}
         <div className="flex justify-center">
-          <Button onClick={onClose}>Close — keep training</Button>
+          <Button onClick={onClose}>閉じる（学習は続行）</Button>
         </div>
       </div>
     );
@@ -710,12 +703,12 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
     return (
       <div className="space-y-3">
         <p className="rounded-md border border-status-failed/30 bg-status-failed/10 p-3 text-sm text-status-failed">
-          Training failed: {train.error ?? "unknown error"}
+          学習に失敗しました: {train.error ?? "不明なエラー"}
         </p>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>閉じる</Button>
           <Button variant="primary" onClick={() => startTrain.mutate()} busy={startTrain.isPending}>
-            Try again
+            再試行
           </Button>
         </div>
       </div>
@@ -727,9 +720,9 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
     return (
       <div className="space-y-4">
         <div className="text-center">
-          <p className="text-sm font-medium text-paper">Preparing photos…</p>
+          <p className="text-sm font-medium text-paper">写真を準備中…</p>
           <p className="mt-1 text-xs text-fog">
-            The photos are being checked, cropped and captioned. This takes a few minutes.
+            写真の確認・トリミング・キャプション付けを実行中です。数分かかります。
           </p>
         </div>
         <ProgressBar value={prep.progress || 0.1} />
@@ -742,10 +735,10 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
     return (
       <div className="space-y-3">
         <p className="rounded-md border border-status-failed/30 bg-status-failed/10 p-3 text-sm text-status-failed">
-          Photo prep failed: {prep.error ?? "unknown error"}
+          写真の準備に失敗しました: {prep.error ?? "不明なエラー"}
         </p>
         <div className="flex justify-end">
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>閉じる</Button>
         </div>
       </div>
     );
@@ -755,9 +748,9 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-paper">Photos are prepped</p>
+        <p className="text-sm font-medium text-paper">写真の準備が完了しました</p>
         <p className="mt-0.5 text-xs text-fog">
-          Review the summary below, then start training when it looks right.
+          下のサマリーを確認し、問題なければ学習を開始してください。
         </p>
       </div>
       {report ? (
@@ -766,7 +759,7 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
         </pre>
       ) : (
         <p className="rounded-md border border-line p-3 text-xs text-fog">
-          No prep report available yet.
+          準備レポートはまだありません。
         </p>
       )}
       {(info.samples ?? info.sample_paths ?? []).length > 0 && (
@@ -798,7 +791,7 @@ function TrainingProgressPanel({ characterId, onClose }: { characterId: number; 
         onClick={() => startTrain.mutate()}
         busy={startTrain.isPending}
       >
-        <GraduationCap size={16} /> Start training (~3 hours)
+        <GraduationCap size={16} /> 学習を開始（約 3 時間）
       </Button>
     </div>
   );
@@ -846,7 +839,7 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
     onError: (e: Error) => toast(e.message, "error"),
   });
 
-  const steps = ["Who", "Photos", "Prep", "Train"];
+  const steps = ["キャラクター", "写真", "準備", "学習"];
 
   return (
     <div>
@@ -880,7 +873,7 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
               }
               onClick={() => setStep(2)}
             >
-              Next: photos <ArrowRight size={14} />
+              次へ: 写真 <ArrowRight size={14} />
             </Button>
           </div>
         </div>
@@ -889,7 +882,7 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
       {step === 2 && (
         <div className="space-y-4">
           <div className="flex items-baseline justify-between">
-            <p className="text-sm text-mist">Add 20–40 photos of {identity.name || "your character"}.</p>
+            <p className="text-sm text-mist">{identity.name || "キャラクター"} の写真を 20〜40 枚追加してください。</p>
             <span
               className={`text-xs font-semibold ${
                 total >= 20 && total <= 40
@@ -899,7 +892,7 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
                     : "text-fog"
               }`}
             >
-              {total} photo{total === 1 ? "" : "s"}
+              {total} 枚
             </span>
           </div>
           <PhotoGrid
@@ -907,17 +900,17 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
             onAdd={(fs) => setFiles((prev) => [...prev, ...fs].slice(0, 60))}
             onRemove={(i) => setFiles((prev) => prev.filter((_, j) => j !== i))}
           />
-          <Field label="Or paste image links" hint="One link per line.">
+          <Field label="または画像リンクを貼り付け" hint="1 行に 1 つのリンク。">
             <TextArea rows={3} value={urlsText} onChange={(e) => setUrlsText(e.target.value)} placeholder="https://…" />
           </Field>
           {total > 0 && total < 20 && (
             <p className="text-xs text-amber-450">
-              {total} is a start — 20 or more gives a much more faithful character.
+              {total} 枚では少なめです — 20 枚以上でより忠実なキャラクターになります。
             </p>
           )}
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(1)}>
-              <ArrowLeft size={14} /> Back
+              <ArrowLeft size={14} /> 戻る
             </Button>
             <Button
               variant="primary"
@@ -925,7 +918,7 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
               busy={submit.isPending}
               onClick={() => submit.mutate()}
             >
-              Upload & prep photos <ArrowRight size={14} />
+              写真をアップロードして準備 <ArrowRight size={14} />
             </Button>
           </div>
         </div>
@@ -945,20 +938,17 @@ function TrainWizard({ onDone }: { onDone: () => void }) {
 function TrainerNotConfigured({ onClose }: { onClose: () => void }) {
   return (
     <div className="rounded-lg border border-line bg-ink-900 p-5 text-sm">
-      <p className="font-medium text-paper">Training isn't set up yet</p>
+      <p className="font-medium text-paper">学習がまだ設定されていません</p>
       <p className="mt-1.5 text-xs leading-relaxed text-fog">
-        Training a character from photos drives an external trainer on this
-        machine, and none is configured. Point StoryBored at one in{" "}
+        写真からのキャラクター学習には、このマシン上の外部トレーナーが必要ですが、設定されていません。StoryBored を{" "}
         <Link
           to="/settings"
           onClick={onClose}
           className="text-amber-450 hover:text-amber-350"
         >
-          Settings
+          設定
         </Link>{" "}
-        (docs/TRAINING.md walks through the trainer setup) — or skip training
-        entirely and use the <em>Import existing</em> tab with a character file
-        you already have.
+        でトレーナーに接続してください（docs/TRAINING.md にセットアップ手順があります）。学習をスキップして、お手元のキャラクターファイルを 既存を取り込み タブで使うこともできます。
       </p>
     </div>
   );
@@ -969,7 +959,7 @@ function NewCharacterModal({ onClose }: { onClose: () => void }) {
   const { data: health } = useHealth();
   const trainerOk = healthOk(health?.trainer);
   return (
-    <Modal title="New character" onClose={onClose} wide>
+    <Modal title="新しいキャラクター" onClose={onClose} wide>
       <div className="mb-5 flex gap-1 rounded-lg border border-line p-1">
         <button
           onClick={() => setTab("import")}
@@ -977,7 +967,7 @@ function NewCharacterModal({ onClose }: { onClose: () => void }) {
             tab === "import" ? "bg-ink-700 text-paper" : "text-fog hover:text-mist"
           }`}
         >
-          Import existing
+          既存を取り込み
         </button>
         <button
           onClick={() => setTab("train")}
@@ -985,7 +975,7 @@ function NewCharacterModal({ onClose }: { onClose: () => void }) {
             tab === "train" ? "bg-ink-700 text-paper" : "text-fog hover:text-mist"
           }`}
         >
-          Train from photos
+          写真から学習
         </button>
       </div>
       {tab === "import" ? (
@@ -1041,14 +1031,14 @@ function EditCharacterModal({
     onSuccess: (res) => {
       if (bio.trim() && !res.bio_used) {
         toast(
-          `Couldn't reach the LLM to work ${character.name}'s bio into the portrait — rendering the standard studio headshot instead.`,
+          `LLM に接続できず ${character.name} のバイオを肖像に反映できませんでした — 代わりに標準のスタジオ顔写真をレンダリングします。`,
           "error",
         );
       } else {
         toast(
           res.bio_used
-            ? `Rendering a portrait of ${character.name} with their bio in mind — the card updates when it's done.`
-            : `Rendering a portrait of ${character.name} — the card updates when it's done.`,
+            ? `${character.name} の肖像をバイオを反映してレンダリング中です — 完了次第カードが更新されます。`
+            : `${character.name} の肖像をレンダリング中です — 完了次第カードが更新されます。`,
           "success",
         );
       }
@@ -1058,13 +1048,13 @@ function EditCharacterModal({
   });
 
   return (
-    <Modal title={`Edit ${character.name}`} onClose={onClose}>
+    <Modal title={`${character.name} を編集`} onClose={onClose}>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Trigger word">
+          <Field label="トリガーワード">
             <Input value={trigger} onChange={(e) => setTrigger(e.target.value)} />
           </Field>
-          <Field label="Strength">
+          <Field label="強さ">
             <Input
               type="number"
               step={0.05}
@@ -1075,15 +1065,15 @@ function EditCharacterModal({
             />
           </Field>
         </div>
-        <Field label="Bio">
+        <Field label="バイオ">
           <TextArea
             rows={3}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Optional — who they are: personality, vibe, style. Generate thumbnail uses it to give the portrait character."
+            placeholder="任意 — 性格、雰囲気、スタイルなど。サムネイル生成時に肖像に反映されます。"
           />
         </Field>
-        <Field label="Notes">
+        <Field label="メモ">
           <TextArea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
         <div className="flex items-center justify-between gap-2">
@@ -1095,28 +1085,28 @@ function EditCharacterModal({
               title={
                 character.lora_name
                   ? bio.trim()
-                    ? "Render a fresh portrait shaped by their bio and use it as the card thumbnail"
-                    : "Render a fresh portrait with this character's LoRA and use it as the card thumbnail"
-                  : "Needs a LoRA — train or import one first"
+                    ? "バイオを反映した新しい肖像をレンダリングし、カードのサムネイルに使います"
+                    : "このキャラクターの LoRA で新しい肖像をレンダリングし、カードのサムネイルに使います"
+                  : "LoRA が必要です — 先に学習するか取り込んでください"
               }
             >
-              <ImagePlus size={14} /> Generate thumbnail
+              <ImagePlus size={14} /> サムネイルを生成
             </Button>
             {character.status === "trained" && onShootout && (
               <Button
                 onClick={onShootout}
-                title="Compare the training checkpoints and pick the best version"
+                title="学習チェックポイントを比較し、最良のバージョンを選びます"
               >
-                <Trophy size={14} /> Shootout
+                <Trophy size={14} /> 選抜テスト
               </Button>
             )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onClose}>
-              Cancel
+              キャンセル
             </Button>
             <Button variant="primary" busy={save.isPending} onClick={() => save.mutate()}>
-              Save
+              保存
             </Button>
           </div>
         </div>
@@ -1149,13 +1139,13 @@ export function CharactersPage() {
     <div>
       <div className="mb-7 flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Characters</h1>
+          <h1 className="text-xl font-semibold tracking-tight">キャラクター</h1>
           <p className="mt-1 text-sm text-fog">
-            Your cast — mention them with @ in any shot description.
+            キャスト一覧 — どのショットの説明でも @ を付けて呼び出せます。
           </p>
         </div>
         <Button variant="primary" onClick={() => setCreating(true)}>
-          <Plus size={15} /> New character
+          <Plus size={15} /> 新しいキャラクター
         </Button>
       </div>
 
@@ -1171,11 +1161,11 @@ export function CharactersPage() {
       {data && data.length === 0 && (
         <EmptyState
           icon={Users}
-          title="No characters yet"
-          body="Bring a character in from an existing file, or train a new one from 20–40 photos. Then cast them in shots by typing @their_handle."
+          title="キャラクターがいません"
+          body="既存ファイルからキャラクターを取り込むか、20〜40 枚の写真から新しいキャラクターを学習できます。その後 @ハンドル を入力してショットに配役しましょう。"
           action={
             <Button variant="primary" onClick={() => setCreating(true)}>
-              <Plus size={15} /> Create your first character
+              <Plus size={15} /> 最初のキャラクターを作成
             </Button>
           }
         />
@@ -1208,10 +1198,10 @@ export function CharactersPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm(`Remove ${c.name} from the cast?`)) remove.mutate(c.id);
+                    if (window.confirm(`${c.name} をキャストから削除しますか？`)) remove.mutate(c.id);
                   }}
                   className="absolute right-1.5 top-1.5 rounded bg-ink-950/70 p-1 text-transparent transition-colors hover:!text-status-failed group-hover:text-fog"
-                  title="Delete character"
+                  title="キャラクターを削除"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -1224,7 +1214,7 @@ export function CharactersPage() {
                 <div className="mt-0.5 flex items-center justify-between gap-2">
                   <p className="truncate text-xs text-fog">@{c.handle}</p>
                   {c.lora_family && (
-                    <span title={`Works with ${loraFamilyLabel(c.lora_family)} engines`}>
+                    <span title={`${loraFamilyLabel(c.lora_family)} エンジンで使用可能`}>
                       <Badge tone="fog">{loraFamilyLabel(c.lora_family)}</Badge>
                     </span>
                   )}
@@ -1252,7 +1242,7 @@ export function CharactersPage() {
         />
       )}
       {viewTrainingId != null && (
-        <Modal title="Character training" onClose={() => setViewTrainingId(null)} wide>
+        <Modal title="キャラクター学習" onClose={() => setViewTrainingId(null)} wide>
           <TrainingProgressPanel
             characterId={viewTrainingId}
             onClose={() => setViewTrainingId(null)}

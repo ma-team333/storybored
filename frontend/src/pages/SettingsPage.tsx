@@ -137,8 +137,8 @@ function ModelSlotRow({
           {options.map((name) => (
             <option key={name} value={name}>
               {name}
-              {name === slot.baked ? " (pack default)" : ""}
-              {large.has(name) ? " ⚠ very large" : ""}
+              {name === slot.baked ? "（パック既定）" : ""}
+              {large.has(name) ? " ⚠ 超大容量" : ""}
             </option>
           ))}
         </Select>
@@ -146,16 +146,16 @@ function ModelSlotRow({
           <button
             onClick={() => onPick(slot.key, slot.baked)}
             className="shrink-0 text-[10px] uppercase tracking-wide text-amber-450/80 hover:text-amber-450"
-            title={`Back to the pack default (${slot.baked})`}
+            title={`パック既定（${slot.baked}）に戻す`}
           >
-            swapped — reset
+            変更済み — リセット
           </button>
         )}
       </div>
       {large.has(slot.value) && (
         <p className="mt-1 text-[11px] text-amber-450/90">
-          This file is over 24&nbsp;GB — likely more than a 24&nbsp;GB card can hold.
-          Prefer a quantized build of the same model if one exists.
+          このファイルは 24&nbsp;GB を超えています — 24&nbsp;GB の GPU には収まらない
+          可能性があります。同じモデルの量子化版があればそちらを推奨します。
         </p>
       )}
     </div>
@@ -243,45 +243,43 @@ function WorkflowRow({
             <span className="block truncate text-xs text-fog">{wf.description}</span>
           )}
         </div>
-        {wf.default && <Badge tone="amber">default</Badge>}
-        {(wf.loras_modified || wf.models_modified) && <Badge tone="fog">customized</Badge>}
-        {wf.removable && <Badge tone="fog">imported</Badge>}
+        {wf.default && <Badge tone="amber">デフォルト</Badge>}
+        {(wf.loras_modified || wf.models_modified) && <Badge tone="fog">カスタム</Badge>}
+        {wf.removable && <Badge tone="fog">読み込み済み</Badge>}
         <Badge tone="fog">{wf.kind}</Badge>
         {wf.median_render_s != null ? (
           <span
-            title={`Median of ${wf.timing_samples} completed render${
-              wf.timing_samples === 1 ? "" : "s"
-            } on this machine`}
+            title={`このマシンでの完了レンダリング ${wf.timing_samples} 件の中央値`}
           >
             <Badge tone="fog">
               ~{wf.median_render_s < 90
-                ? `${Math.round(wf.median_render_s)}s`
-                : `${Math.round(wf.median_render_s / 60)}m`}
-              /{wf.kind === "video" ? "clip" : "frame"}
+                ? `${Math.round(wf.median_render_s)}秒`
+                : `${Math.round(wf.median_render_s / 60)}分`}
+              /{wf.kind === "video" ? "クリップ" : "フレーム"}
             </Badge>
           </span>
         ) : available && (wf.fit === "tight" || wf.fit === "exceeds") ? (
-          <span title={wf.fit_detail || "May be slow on this card."}>
+          <span title={wf.fit_detail || "この GPU では低速になる可能性があります。"}>
             <Badge tone={wf.fit === "exceeds" ? "red" : "amber"}>
-              slow on this card
+              この GPU では低速
             </Badge>
           </span>
         ) : (
           available &&
           wf.fit === "streams" && (
-            <span title={wf.fit_detail || "Streams layers on this card — works, just slower."}>
-              <Badge tone="fog">streams on this card</Badge>
+            <span title={wf.fit_detail || "この GPU ではレイヤーをストリーミング処理します — 動作はしますが低速です。"}>
+              <Badge tone="fog">ストリーミング動作</Badge>
             </span>
           )
         )}
         {available ? (
-          <Badge tone="green">ready</Badge>
+          <Badge tone="green">準備完了</Badge>
         ) : unreachable ? (
-          <Badge tone="amber">engine offline</Badge>
+          <Badge tone="amber">エンジンオフライン</Badge>
         ) : missing.length > 0 ? (
-          <Badge tone="red">missing models</Badge>
+          <Badge tone="red">モデル未導入</Badge>
         ) : (
-          <Badge tone="red">missing nodes</Badge>
+          <Badge tone="red">ノード未導入</Badge>
         )}
       </button>
       {open && (
@@ -297,7 +295,7 @@ function WorkflowRow({
                       : "text-amber-450/80"
                 }`}
               >
-                {wf.fit_detail || "This pack's models may not fit this card's VRAM."}
+                {wf.fit_detail || "このパックのモデルは GPU の VRAM に収まらない可能性があります。"}
               </p>
             )}
           {wf.license_note && (
@@ -307,18 +305,18 @@ function WorkflowRow({
           )}
           {unreachable && (
             <p className="mb-2 text-xs text-status-failed/90">
-              Can't reach the image engine — is it running? Set its address above.
+              画像エンジンに接続できません — エンジンは起動していますか？上でアドレスを設定してください。
             </p>
           )}
           {!unreachable && missingInfo.length > 0 && (
             <div className="mb-3">
               <div className="mb-1.5 flex items-center gap-2">
                 <p className="flex-1 text-xs text-fog">
-                  This engine needs model files that aren't installed:
+                  このエンジンには未導入のモデルファイルが必要です:
                 </p>
                 {anyDownloadable && modelsDirSet && (
                   <Button size="sm" onClick={() => onDownload(wf.id)}>
-                    <Download size={13} /> Download all missing
+                    <Download size={13} /> 未導入ファイルをすべてダウンロード
                   </Button>
                 )}
               </div>
@@ -343,29 +341,29 @@ function WorkflowRow({
                           target="_blank"
                           rel="noreferrer"
                           className="flex shrink-0 items-center gap-1 text-[10px] uppercase tracking-wide text-amber-450/80 hover:text-amber-450"
-                          title="Open the model's page"
+                          title="モデルの配布ページを開く"
                         >
-                          <ExternalLink size={11} /> source
+                          <ExternalLink size={11} /> 配布元
                         </a>
                       )}
                       {m.downloadable && modelsDirSet && (
                         <Button
                           size="sm"
                           onClick={() => onDownload(wf.id, [m.filename])}
-                          title="Fetch this file into the engine's models folder"
+                          title="このファイルをエンジンの models フォルダに取得します"
                         >
-                          <Download size={13} /> Download
+                          <Download size={13} /> ダウンロード
                         </Button>
                       )}
                     </div>
                     <p className="mt-0.5 text-[11px] text-fog">
                       {m.folder ? (
                         <>
-                          goes in{" "}
+                          配置先:{" "}
                           <span className="font-mono">models/{m.folder}/</span>
                         </>
                       ) : (
-                        "see the engine's docs for the right folder"
+                        "適切なフォルダはエンジンのドキュメントを参照してください"
                       )}
                       {m.license ? ` · ${m.license}` : ""}
                     </p>
@@ -377,10 +375,10 @@ function WorkflowRow({
               </ul>
               {anyDownloadable && !modelsDirSet && (
                 <p className="mt-1.5 text-[11px] text-fog">
-                  Some of these can be downloaded for you — set the models folder in
-                  the engine section above (works when StoryBored runs on the same
-                  computer as the engine). Otherwise use the source links and place
-                  each file in the folder shown.
+                  一部のファイルは自動ダウンロードできます — 上のエンジンセクションで
+                  models フォルダを設定してください（StoryBored がエンジンと同じ
+                  コンピューターで動作している場合に有効）。それ以外は配布元リンクから
+                  取得し、表示のフォルダに手動で配置してください。
                 </p>
               )}
             </div>
@@ -388,8 +386,8 @@ function WorkflowRow({
           {!unreachable && missingNodes.length > 0 && (
             <div className="mb-2">
               <p className="mb-1 text-xs text-fog">
-                Missing custom nodes — install the node pack that provides each of
-                these in your rendering engine, then hit Refresh:
+                カスタムノードが不足しています — レンダリングエンジンに各ノードを
+                提供するノードパックを導入し、「更新」を押してください:
               </p>
               <ul className="space-y-0.5">
                 {missingNodes.map((n) => (
@@ -404,7 +402,7 @@ function WorkflowRow({
           {(wf.models ?? []).length > 0 && (
             <div className="mb-3">
               <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-fog">
-                Model
+                モデル
               </span>
               <div className="space-y-1.5">
                 {(wf.models ?? []).map((slot) => (
@@ -416,30 +414,30 @@ function WorkflowRow({
 
           <div className="mb-2 flex items-center gap-2">
             <span className="flex-1 text-xs font-medium uppercase tracking-wider text-fog">
-              Built-in LoRA stack
+              内蔵 LoRA スタック
             </span>
             <a
               className="inline-flex items-center gap-1 text-[11px] text-fog hover:text-amber-450"
               href={`/api/workflows/${wf.id}/graph?effective=true`}
               download
-              title="Download this engine's ComfyUI workflow (API format) with your model swaps and LoRA edits applied — imports straight into ComfyUI"
+              title="モデル差し替えと LoRA 編集を適用した、このエンジンの ComfyUI ワークフロー（API 形式）をダウンロード — ComfyUI にそのまま読み込めます"
             >
-              <Download size={12} /> Export workflow
+              <Download size={12} /> ワークフローを書き出し
             </a>
             {wf.loras_modified && (
               <Button size="sm" onClick={() => onSaveLoras(wf.id, [])}>
-                Reset to pack defaults
+                パック既定にリセット
               </Button>
             )}
             {!wf.default && (
               <Button size="sm" onClick={() => onMakeDefault(wf)}>
-                Make default
+                デフォルトに設定
               </Button>
             )}
           </div>
 
           {stack.length === 0 && added.length === 0 ? (
-            <p className="text-xs text-fog/80">This engine has no LoRAs.</p>
+            <p className="text-xs text-fog/80">このエンジンには LoRA がありません。</p>
           ) : (
             <div className="space-y-1.5">
               {stack.map((row, i) => (
@@ -459,7 +457,7 @@ function WorkflowRow({
                       )
                     }
                     className="h-4 w-4 accent-amber-450"
-                    title={row.enabled ? "On — in the render chain" : "Off — skipped"}
+                    title={row.enabled ? "オン — レンダリングチェーンに含まれる" : "オフ — スキップ"}
                   />
                   <span
                     className={`min-w-0 flex-1 truncate font-mono text-xs ${
@@ -470,7 +468,7 @@ function WorkflowRow({
                   </span>
                   {row.disabled_with_character && (
                     <span className="shrink-0 text-[10px] uppercase tracking-wide text-fog/70">
-                      off with @characters
+                      @キャラクター指定時はオフ
                     </span>
                   )}
                   {/* wrapper constrains width — the Input's own w-full wins over a w-* override */}
@@ -496,8 +494,8 @@ function WorkflowRow({
                       className="h-7 text-xs"
                       title={
                         row.strength !== row.baked_strength
-                          ? `Strength (pack default ${row.baked_strength})`
-                          : "Strength"
+                          ? `強度（パック既定 ${row.baked_strength}）`
+                          : "強度"
                       }
                     />
                   </div>
@@ -529,7 +527,7 @@ function WorkflowRow({
                     {a.lora_name}
                   </span>
                   <span className="shrink-0 text-[10px] uppercase tracking-wide text-amber-450/80">
-                    added
+                    追加
                   </span>
                   <div className="w-20 shrink-0">
                     <Input
@@ -551,7 +549,7 @@ function WorkflowRow({
                         onSaveLoras(wf.id, buildEngineLoraEntries(stack, added))
                       }
                       className="h-7 text-xs"
-                      title="Strength"
+                      title="強度"
                     />
                   </div>
                   <button
@@ -562,7 +560,7 @@ function WorkflowRow({
                       )
                     }
                     className="text-fog transition-colors hover:text-status-failed"
-                    title="Remove"
+                    title="削除"
                   >
                     <X size={14} />
                   </button>
@@ -581,9 +579,9 @@ function WorkflowRow({
                 <option value="">
                   {availableLoras
                     ? availableLoras.length
-                      ? "Add a LoRA to this engine…"
-                      : "No LoRAs found on the engine"
-                    : "Loading LoRA list…"}
+                      ? "このエンジンに LoRA を追加…"
+                      : "エンジン上に LoRA が見つかりません"
+                    : "LoRA 一覧を読み込み中…"}
                 </option>
                 {(availableLoras ?? [])
                   .filter((name) => !inChain.has(name))
@@ -605,7 +603,7 @@ function WorkflowRow({
                   setNewLora("");
                 }}
               >
-                <Plus size={14} /> Add
+                <Plus size={14} /> 追加
               </Button>
             </div>
           )}
@@ -616,9 +614,9 @@ function WorkflowRow({
                 variant="danger"
                 size="sm"
                 onClick={() => onRemove(wf)}
-                title="Delete this imported engine's files — shots already rendered with it keep their images"
+                title="この読み込み済みエンジンのファイルを削除します — すでにこのエンジンでレンダリングしたショットの画像は残ります"
               >
-                <Trash2 size={13} /> Remove this engine
+                <Trash2 size={13} /> このエンジンを削除
               </Button>
             </div>
           )}
@@ -779,13 +777,13 @@ export function SettingsPage() {
     onSuccess: (data) => {
       if (data.queued > 0) {
         toast(
-          `Downloading ${data.queued} model file${data.queued === 1 ? "" : "s"} — watch the job tray.`,
+          `モデルファイル ${data.queued} 件をダウンロード中 — ジョブトレイで確認できます。`,
           "success",
         );
       } else if (data.skipped.length > 0) {
-        toast("Those files have no verified download — use the notes to find them.", "error");
+        toast("これらのファイルには検証済みのダウンロードがありません — メモを参考に探してください。", "error");
       } else {
-        toast("Nothing to download — already fetching or nothing missing.", "success");
+        toast("ダウンロードするものがありません — 取得済みか、不足ファイルがありません。", "success");
       }
       qc.invalidateQueries({ queryKey: ["jobs"] });
     },
@@ -797,7 +795,7 @@ export function SettingsPage() {
   const removeWorkflow = useMutation({
     mutationFn: (wf: WorkflowManifest) => apiDelete(`/api/workflows/${wf.id}`),
     onSuccess: (_data, wf) => {
-      toast(`${wf.name} removed.`, "success");
+      toast(`${wf.name} を削除しました。`, "success");
       qc.invalidateQueries({ queryKey: ["workflows"] });
     },
     onError: (e: Error) => toast(e.message, "error"),
@@ -812,7 +810,7 @@ export function SettingsPage() {
         },
       }),
     onSuccess: (_data, wf) => {
-      toast(`${wf.name} is now the default ${wf.kind} engine.`, "success");
+      toast(`${wf.name} をデフォルトの ${wf.kind === "video" ? "動画" : "画像"}エンジンに設定しました。`, "success");
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["workflows"] });
     },
@@ -829,7 +827,7 @@ export function SettingsPage() {
         },
       }),
     onSuccess: () => {
-      toast("Settings saved.", "success");
+      toast("設定を保存しました。", "success");
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["health"] });
       qc.invalidateQueries({ queryKey: ["workflows"] });
@@ -841,7 +839,7 @@ export function SettingsPage() {
     mutationFn: () =>
       apiPut("/api/settings", { values: { lora_factory_dir: trainerDir.trim() } }),
     onSuccess: () => {
-      toast("Settings saved.", "success");
+      toast("設定を保存しました。", "success");
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["health"] });
     },
@@ -851,15 +849,15 @@ export function SettingsPage() {
   const testTrainer = async () => {
     const res = await refetchHealth();
     const part = res.data?.trainer;
-    if (healthOk(part)) toast("Trainer folder found.", "success");
-    else toast(`Character trainer: ${healthDetail(part)}`, "error");
+    if (healthOk(part)) toast("トレーナーフォルダを確認しました。", "success");
+    else toast(`キャラクタートレーナー: ${healthDetail(part)}`, "error");
   };
 
   const testEngine = async () => {
     const res = await refetchHealth();
     const part = res.data?.comfy;
-    if (healthOk(part)) toast("Image engine is reachable.", "success");
-    else toast(`Image engine: ${healthDetail(part)}`, "error");
+    if (healthOk(part)) toast("画像エンジンに接続できました。", "success");
+    else toast(`画像エンジン: ${healthDetail(part)}`, "error");
   };
 
   const saveLlm = useMutation({
@@ -873,7 +871,7 @@ export function SettingsPage() {
       return apiPut("/api/settings", { values });
     },
     onSuccess: () => {
-      toast("Settings saved.", "success");
+      toast("設定を保存しました。", "success");
       setLlmKeyDirty(false);
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["health"] });
@@ -884,29 +882,29 @@ export function SettingsPage() {
   const testLlm = async () => {
     const res = await refetchHealth();
     const part = res.data?.llm;
-    if (healthOk(part)) toast("Writing assistant is reachable.", "success");
-    else toast(`Writing assistant: ${healthDetail(part)}`, "error");
+    if (healthOk(part)) toast("文章アシスタントに接続できました。", "success");
+    else toast(`文章アシスタント: ${healthDetail(part)}`, "error");
   };
 
   const rows: { key: string; label: string; hint: string }[] = [
-    { key: "comfy", label: "Image & video engine", hint: "Renders your stills and clips" },
-    { key: "llm", label: "Writing assistant", hint: "Drafts shot lists from scripts" },
-    { key: "trainer", label: "Character trainer", hint: "Teaches the engine new faces" },
-    { key: "ffmpeg", label: "Video assembler", hint: "Cuts the final animatic" },
+    { key: "comfy", label: "画像・動画エンジン", hint: "スチルとクリップをレンダリングします" },
+    { key: "llm", label: "文章アシスタント", hint: "脚本からショットリストを作成します" },
+    { key: "trainer", label: "キャラクタートレーナー", hint: "エンジンに新しい顔を学習させます" },
+    { key: "ffmpeg", label: "動画アセンブラー", hint: "最終的なアニマティックを組み立てます" },
   ];
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-7 flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
-          <p className="mt-1 text-sm text-fog">What StoryBored is connected to.</p>
+          <h1 className="text-xl font-semibold tracking-tight">設定</h1>
+          <p className="mt-1 text-sm text-fog">StoryBored の接続先の管理。</p>
         </div>
         <Link
           to="/setup"
           className="flex items-center gap-1.5 text-sm font-medium text-amber-450 hover:text-amber-350"
         >
-          <Wand2 size={14} /> Setup wizard
+          <Wand2 size={14} /> セットアップウィザード
         </Link>
       </div>
 
@@ -919,7 +917,7 @@ export function SettingsPage() {
       {/* status */}
       <section className="mb-6 overflow-hidden rounded-xl border border-line bg-ink-900/40">
         <header className="border-b border-line px-4 py-3">
-          <h2 className="text-sm font-semibold">System status</h2>
+          <h2 className="text-sm font-semibold">システム状態</h2>
         </header>
         <ul>
           {rows.map((r) => {
@@ -936,7 +934,7 @@ export function SettingsPage() {
                   <span className="block text-xs text-fog">{r.hint}</span>
                 </div>
                 <span className={`max-w-48 truncate text-xs ${ok ? "text-status-approved" : "text-fog"}`}>
-                  {health ? healthDetail(part) : "checking…"}
+                  {health ? healthDetail(part) : "確認中…"}
                 </span>
               </li>
             );
@@ -946,10 +944,9 @@ export function SettingsPage() {
 
       {/* image engine config */}
       <section className="mb-6 rounded-xl border border-line bg-ink-900/40 p-5">
-        <h2 className="text-sm font-semibold">Image & video engine</h2>
+        <h2 className="text-sm font-semibold">画像・動画エンジン</h2>
         <p className="mt-1 text-xs text-fog">
-          Where your rendering engine is running. Change this if it's on another
-          computer or a different port.
+          レンダリングエンジンの稼働先です。別のコンピューターや別のポートで動いている場合は、ここを変更してください。
         </p>
         {settingsLoading ? (
           <div className="mt-4 space-y-3">
@@ -957,7 +954,7 @@ export function SettingsPage() {
           </div>
         ) : (
           <div className="mt-4 space-y-3.5">
-            <Field label="Image engine address">
+            <Field label="画像エンジンのアドレス">
               <Input
                 value={comfyUrl}
                 onChange={(e) => setComfyUrl(e.target.value)}
@@ -965,8 +962,8 @@ export function SettingsPage() {
               />
             </Field>
             <Field
-              label="LoRA folder"
-              hint="Where uploaded character files are copied so the engine can load them (the engine's models/loras folder). Optional — needed only for file uploads."
+              label="LoRA フォルダ"
+              hint="アップロードしたキャラクターファイルがコピーされる場所です（エンジンの models/loras フォルダ）。ファイルアップロードを使う場合にのみ必要です。"
             >
               <Input
                 value={lorasDir}
@@ -975,8 +972,8 @@ export function SettingsPage() {
               />
             </Field>
             <Field
-              label="Engine models folder (optional)"
-              hint="The engine's models directory, if it's on this computer — lets StoryBored download missing model files for you and warn about oversized ones."
+              label="エンジンの models フォルダ（任意）"
+              hint="エンジンがこのコンピューター上にある場合の models ディレクトリです。不足モデルの自動ダウンロードや、大容量ファイルの警告ができるようになります。"
             >
               <Input
                 value={modelsDir}
@@ -986,14 +983,14 @@ export function SettingsPage() {
             </Field>
             <div className="flex justify-end gap-2">
               <Button onClick={testEngine} busy={healthFetching}>
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
               <Button
                 variant="primary"
                 onClick={() => saveEngine.mutate()}
                 busy={saveEngine.isPending}
               >
-                <Save size={14} /> Save
+                <Save size={14} /> 保存
               </Button>
             </div>
           </div>
@@ -1002,11 +999,9 @@ export function SettingsPage() {
 
       {/* LLM config */}
       <section className="mb-6 rounded-xl border border-line bg-ink-900/40 p-5">
-        <h2 className="text-sm font-semibold">Writing assistant</h2>
+        <h2 className="text-sm font-semibold">文章アシスタント</h2>
         <p className="mt-1 text-xs text-fog">
-          Any OpenAI-compatible service works — local or hosted. Powers script
-          breakdown, story-vibes boards, Enhance, and motion drafts. Once a key
-          is saved, Test uses it too.
+          OpenAI 互換のサービスならローカル・ホスト型どちらでも使えます。脚本分解、ストーリーモードのボード、強化（Enhance）、モーション下書きで利用します。キーを保存するとテストでも使われます。
         </p>
         {settingsLoading ? (
           <div className="mt-4 space-y-3">
@@ -1015,7 +1010,7 @@ export function SettingsPage() {
           </div>
         ) : (
           <div className="mt-4 space-y-3.5">
-            <Field label="Service URL">
+            <Field label="サービス URL">
               <Input
                 value={llmUrl}
                 onChange={(e) => setLlmUrl(e.target.value)}
@@ -1023,7 +1018,7 @@ export function SettingsPage() {
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="API key" hint="Leave blank for local services.">
+              <Field label="API キー" hint="ローカルサービスでは空欄のままで構いません。">
                 <Input
                   type="password"
                   value={llmKey}
@@ -1031,23 +1026,23 @@ export function SettingsPage() {
                     setLlmKey(e.target.value);
                     setLlmKeyDirty(true);
                   }}
-                  placeholder={keySet ? "•••••••• (saved)" : "sk-…"}
+                  placeholder={keySet ? "••••••••（保存済み）" : "sk-…"}
                 />
               </Field>
-              <Field label="Model">
+              <Field label="モデル">
                 <Input
                   value={llmModel}
                   onChange={(e) => setLlmModel(e.target.value)}
-                  placeholder="model name"
+                  placeholder="モデル名"
                 />
               </Field>
             </div>
             <div className="flex justify-end gap-2">
               <Button onClick={testLlm} busy={healthFetching}>
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
               <Button variant="primary" onClick={() => saveLlm.mutate()} busy={saveLlm.isPending}>
-                <Save size={14} /> Save
+                <Save size={14} /> 保存
               </Button>
             </div>
           </div>
@@ -1056,10 +1051,10 @@ export function SettingsPage() {
 
       {/* trainer config */}
       <section className="mb-6 rounded-xl border border-line bg-ink-900/40 p-5">
-        <h2 className="text-sm font-semibold">Character trainer</h2>
+        <h2 className="text-sm font-semibold">キャラクタートレーナー</h2>
         <p className="mt-1 text-xs text-fog">
-          Optional — enables training characters from photos. Point this at a
-          lora-factory-style checkout on this machine (see docs/TRAINING.md).
+          任意 — 写真からキャラクターを学習できるようになります。このマシン上の
+          lora-factory 系のチェックアウトを指定してください（docs/TRAINING.md を参照）。
         </p>
         {settingsLoading ? (
           <div className="mt-4 space-y-3">
@@ -1067,7 +1062,7 @@ export function SettingsPage() {
           </div>
         ) : (
           <div className="mt-4 space-y-3.5">
-            <Field label="Trainer folder">
+            <Field label="トレーナーフォルダ">
               <Input
                 value={trainerDir}
                 onChange={(e) => setTrainerDir(e.target.value)}
@@ -1076,14 +1071,14 @@ export function SettingsPage() {
             </Field>
             <div className="flex justify-end gap-2">
               <Button onClick={testTrainer} busy={healthFetching}>
-                <FlaskConical size={14} /> Test
+                <FlaskConical size={14} /> テスト
               </Button>
               <Button
                 variant="primary"
                 onClick={() => saveTrainer.mutate()}
                 busy={saveTrainer.isPending}
               >
-                <Save size={14} /> Save
+                <Save size={14} /> 保存
               </Button>
             </div>
           </div>
@@ -1092,15 +1087,14 @@ export function SettingsPage() {
 
       {/* style LoRAs */}
       <section className="mb-6 rounded-xl border border-line bg-ink-900/40 p-5">
-        <h2 className="text-sm font-semibold">Style LoRAs</h2>
+        <h2 className="text-sm font-semibold">スタイル LoRA</h2>
         <p className="mt-1 text-xs text-fog">
-          Extra look/style LoRAs layered into every still you render. Flip them on and
-          off any time — characters keep the final say on identity.
+          レンダリングするすべてのスチルに重ねられる見た目・スタイル系 LoRA です。いつでもオン/オフできます — キャラクターの同一性が最終的に優先されます。
         </p>
         <div className="mt-4 space-y-2">
           {styleLoras.length === 0 && (
             <p className="text-xs text-fog/80">
-              None yet — pick a LoRA below to try a look on your next render.
+              まだありません — 下で LoRA を選ぶと、次のレンダリングから試せます。
             </p>
           )}
           {styleLoras.map((s, i) => (
@@ -1119,7 +1113,7 @@ export function SettingsPage() {
                   )
                 }
                 className="h-4 w-4 accent-amber-450"
-                title={s.enabled ? "On — applied to renders" : "Off"}
+                title={s.enabled ? "オン — レンダリングに適用" : "オフ"}
               />
               <span
                 className={`min-w-0 flex-1 truncate font-mono text-xs ${
@@ -1144,13 +1138,13 @@ export function SettingsPage() {
                   }
                   onBlur={() => saveStyleLoras.mutate(styleLoras)}
                   className="h-8"
-                  title="Strength"
+                  title="強度"
                 />
               </div>
               <button
                 onClick={() => commitStyleLoras(styleLoras.filter((_, j) => j !== i))}
                 className="text-fog transition-colors hover:text-status-failed"
-                title="Remove"
+                title="削除"
               >
                 <X size={14} />
               </button>
@@ -1161,9 +1155,9 @@ export function SettingsPage() {
               <option value="">
                 {availableLoras
                   ? availableLoras.length
-                    ? "Choose a LoRA…"
-                    : "No LoRAs found on the engine"
-                  : "Loading LoRA list…"}
+                    ? "LoRA を選択…"
+                    : "エンジン上に LoRA が見つかりません"
+                  : "LoRA 一覧を読み込み中…"}
               </option>
               {(availableLoras ?? [])
                 .filter((name) => !styleLoras.some((s) => s.lora_name === name))
@@ -1174,7 +1168,7 @@ export function SettingsPage() {
                 ))}
             </Select>
             <Button onClick={addStyleLora} disabled={!newStyleLora}>
-              <Plus size={14} /> Add
+              <Plus size={14} /> 追加
             </Button>
           </div>
         </div>
@@ -1184,33 +1178,30 @@ export function SettingsPage() {
       <section className="overflow-hidden rounded-xl border border-line bg-ink-900/40">
         <header className="flex items-start gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold">Engines</h2>
+            <h2 className="text-sm font-semibold">エンジン</h2>
             <p className="mt-0.5 text-xs text-fog">
-              Rendering styles installed on this system — the <em>default</em> one renders
-              shots that don't pick an engine. Expand a row to swap its base model and
-              edit the LoRAs it runs with. Add more engines by dropping a pack into the
-              workflows folder.
+              このシステムに導入済みのレンダリングスタイルです。<em>デフォルト</em>のエンジンが、エンジンを指定しないショットをレンダリングします。行を展開するとベースモデルの差し替えや、一緒に使う LoRA の編集ができます。エンジンパックを workflows フォルダに入れるとエンジンを追加できます。
             </p>
           </div>
           <Button
             size="sm"
             onClick={() => setImportOpen(true)}
-            title="Turn a ComfyUI workflow export into a new engine"
+            title="ComfyUI のワークフロー書き出しから新しいエンジンを作成します"
           >
-            <FileJson size={13} /> Import workflow
+            <FileJson size={13} /> ワークフローを読み込み
           </Button>
           <Button
             size="sm"
             onClick={() => refreshWorkflows.mutate()}
             busy={refreshWorkflows.isPending}
-            title="Re-check which models and nodes the engine has right now"
+            title="エンジンが現在持っているモデルとノードを再確認します"
           >
-            <RefreshCw size={13} /> Refresh
+            <RefreshCw size={13} /> 更新
           </Button>
         </header>
         {wfError ? (
           <p className="px-4 py-6 text-center text-sm text-fog">
-            Couldn't load the engine list — is the server running?
+            エンジン一覧を読み込めませんでした — サーバーは起動していますか？
           </p>
         ) : !workflows ? (
           <div className="space-y-2 p-4">
@@ -1218,7 +1209,7 @@ export function SettingsPage() {
             <Skeleton className="h-10" />
           </div>
         ) : workflows.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-fog">No engine packs found.</p>
+          <p className="px-4 py-6 text-center text-sm text-fog">エンジンパックが見つかりません。</p>
         ) : (
           <ul>
             {workflows.map((wf) => (
@@ -1234,7 +1225,7 @@ export function SettingsPage() {
                   downloadModels.mutate({ packId, filenames })
                 }
                 onRemove={(w) => {
-                  if (window.confirm(`Remove the "${w.name}" engine?`)) {
+                  if (window.confirm(`エンジン「${w.name}」を削除しますか？`)) {
                     removeWorkflow.mutate(w);
                   }
                 }}
