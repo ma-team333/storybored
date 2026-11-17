@@ -10,7 +10,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { apiDelete, apiGet, apiPost, apiPostForm, mediaUrl } from "../lib/api";
+import { apiDelete, apiGet, apiPost, apiPostForm, mediaUrl, withToken } from "../lib/api";
 import type { Job, Project } from "../lib/types";
 import { HealthBanner } from "../components/HealthBanner";
 import { EmptyState, ErrorState, Skeleton } from "../components/EmptyState";
@@ -388,7 +388,9 @@ export function ProjectsPage() {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            window.location.href = `/api/projects/${p.id}/export/download`;
+                            window.location.href = withToken(
+                              `/api/projects/${p.id}/export/download`,
+                            );
                           }}
                           className="flex items-center gap-1 rounded-md border border-line-bright px-2 py-1 text-[11px] font-medium text-mist transition-colors hover:text-paper"
                           title="書き出したプロジェクトファイルをダウンロード"

@@ -15,7 +15,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { apiDelete, apiGet, apiPost, apiPut } from "../lib/api";
+import { apiDelete, apiGet, apiPost, apiPut, withToken } from "../lib/api";
 import { ImportWorkflowWizard } from "../components/ImportWorkflowWizard";
 import { formatBytes } from "../lib/format";
 import {
@@ -418,7 +418,7 @@ function WorkflowRow({
             </span>
             <a
               className="inline-flex items-center gap-1 text-[11px] text-fog hover:text-amber-450"
-              href={`/api/workflows/${wf.id}/graph?effective=true`}
+              href={withToken(`/api/workflows/${wf.id}/graph?effective=true`)}
               download
               title="モデル差し替えと LoRA 編集を適用した、このエンジンの ComfyUI ワークフロー（API 形式）をダウンロード — ComfyUI にそのまま読み込めます"
             >

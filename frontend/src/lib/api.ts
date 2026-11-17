@@ -116,12 +116,18 @@ export function apiPostForm<T>(path: string, form: FormData): Promise<T> {
   return request<T>(path, { method: "POST", body: form });
 }
 
-/** Build a URL for a media file path returned by the API. <img>/<video> tags
- *  can't send headers, so the shared token travels as a query parameter. */
+/** Query-param form of the shared token. <a>, <img>, <video> and
+ *  window.location cannot send Authorization. */
+export function withToken(path: string): string {
+  const token = getToken();
+  if (!token) return path;
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}token=${encodeURIComponent(token)}`;
+}
+
+/** Build a URL for a media file path returned by the API. */
 export function mediaUrl(path?: string | null): string | undefined {
   if (!path) return undefined;
   const clean = path.replace(/^\/+/, "");
-  const token = getToken();
-  const suffix = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `/api/media/${clean}${suffix}`;
+  return withToken(`/api/media/${clean}`);
 }

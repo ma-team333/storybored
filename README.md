@@ -213,8 +213,9 @@ docker compose up -d
 ```
 
 <http://localhost:8600> を開いてください — compose ファイルは既定で localhost のみに
-バインドします(上記と同じ認証なしの警告。`ports:` 行を編集して信頼できる LAN に公開
-できます)。すべての状態はホストの `./data` に入ります。
+バインドします。ポートを LAN に開くときは `STORYBORED_TOKEN` を設定してください
+(未設定のまま公開すると、到達した誰でも GPU とメディアを操作できます)。
+すべての状態はホストの `./data` に入ります。
 
 ComfyUI はコンテナの**外**に置いたままです — StoryBored は HTTP でのみ通信します。
 初回起動ウィザード(または `COMFYUI_URL`)で、*同じマシン上*の ComfyUI のアドレスは

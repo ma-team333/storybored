@@ -20,11 +20,10 @@ services:
     image: storybored
     container_name: storybored
     ports:
-      # Localhost-only by default. StoryBored has NO login and no
-      # authentication — anyone who can reach it can drive your GPU, read
-      # your media, and change settings. Swap to the LAN line only on a
-      # network you trust, and never expose it directly to the public
-      # internet.
+      # Localhost-only by default. There is no login screen. If this port
+      # is reachable beyond localhost, set STORYBORED_TOKEN below. Empty
+      # means anyone who can reach it can drive the GPU, read media, and
+      # change settings. Never expose it directly to the public internet.
       - "127.0.0.1:8600:8600"
       # - "8600:8600"   # LAN: reachable from other devices on your network
     volumes:
@@ -51,6 +50,7 @@ services:
       COMFY_MODELS_DIR: ${COMFY_MODELS_DIR:-}
       COMFY_LORAS_DIR: ${COMFY_LORAS_DIR:-}
       LORA_FACTORY_DIR: ${LORA_FACTORY_DIR:-}
+      STORYBORED_TOKEN: ${STORYBORED_TOKEN:-}
     extra_hosts:
       # Makes host.docker.internal resolve on Linux; harmless elsewhere.
       - "host.docker.internal:host-gateway"

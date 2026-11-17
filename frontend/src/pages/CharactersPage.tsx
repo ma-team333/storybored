@@ -23,6 +23,7 @@ import {
   apiPostForm,
   apiPost,
   mediaUrl,
+  withToken,
 } from "../lib/api";
 import { healthOk, loraFamilyLabel, LORA_FAMILY_LABELS } from "../lib/types";
 import type {
@@ -507,7 +508,9 @@ function ShootoutPanel({
     } catch {
       /* fall through to the raw-grid fallback below */
     }
-    const gridUrl = `/api/training/${characterId}/shootout/grid?v=${shootout.id}`;
+    const gridUrl = withToken(
+      `/api/training/${characterId}/shootout/grid?v=${shootout.id}`,
+    );
     const inUse = (row: ShootoutRow) =>
       !!character?.lora_name?.endsWith(`/${row.checkpoint}`) &&
       Math.abs((character?.lora_strength ?? 1) - row.strength) < 0.001;
